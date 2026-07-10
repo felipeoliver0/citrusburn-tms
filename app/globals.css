@@ -1,0 +1,64 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+@theme {
+  --color-brand-50: #eef2ff; /* indigo-50 */
+  --color-brand-100: #e0e7ff; /* indigo-100 */
+  --color-brand-200: #c7d2fe; /* indigo-200 */
+  --color-brand-300: #a5b4fc; /* indigo-300 */
+  --color-brand-400: #818cf8; /* indigo-400 */
+  --color-brand-500: #6366f1; /* indigo-500 */
+  --color-brand-600: #4f46e5; /* indigo-600 */
+  --color-brand-700: #4338ca; /* indigo-700 */
+  --color-brand-800: #3730a3; /* indigo-800 */
+  --color-brand-900: #312e81; /* indigo-900 */
+  
+  --animate-fade-in-up: fade-in-up 0.8s ease-out forwards;
+  --animate-fade-in: fade-in 1s ease-out forwards;
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
+}
+
+:root {
+  color-scheme: light;
+  --background: #f9fafb; /* gray-50 */
+  --foreground: #111827; /* gray-900 */
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(229, 231, 235, 1); /* gray-200 */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}

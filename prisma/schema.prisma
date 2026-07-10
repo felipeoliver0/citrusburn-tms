@@ -1,0 +1,255 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  BROKER    
+  CARRIER   
+  DRIVER    
+  ADMIN     
+  DEALER
+}
+
+enum LoadStatus {
+  AVAILABLE
+  OFFERED     
+  BOOKED      
+  IN_TRANSIT  
+  DELIVERED   
+  INVOICED
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum SubscriptionStatus {
+  NONE
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+model User {
+  id               String        @id @default(uuid())
+  email            String        @unique
+  passwordHash     String
+  role             Role          @default(CARRIER)
+  
+  fullName         String?       
+  companyName      String?
+  companyAddress   String?       
+  phone            String?       
+  mcNumber         String?  
+
+  // Novos campos de Cadastro Avançado
+  usdotNumber      String?
+  websiteUrl       String?
+  yearEstablished  String?
+  companyCountry   String?
+  companyCity      String?
+  companyState     String?
+  companyZip       String?
+  timeZone         String?
+  hoursOfOperation String?
+  cellPhone        String?
+  howDidYouHear    String?
+  ein              String?
+  bondNumber       String?
+  insuranceCertUrl String?
+  
+  emailVerified    Boolean       @default(false)
+  verificationCode String?  
+  verificationCodeExpiry DateTime?
+  subscriptionStatus     SubscriptionStatus @default(NONE)
+  stripeCustomerId       String?            @unique
+  stripeSubscriptionId   String?            @unique
+  trialEndsAt            DateTime?
+  subscriptionEndsAt     DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @default(now()) @updatedAt
+  deletedAt        DateTime?
+
+  loadsPosted      Load[]        @relation("BrokerLoads")
+  loadsAssigned    Load[]        @relation("CarrierLoads")
+  loadsDriving     Load[]        @relation("DriverLoads")
+  
+  loadRequests     LoadRequest[]
+  savedSearches    SavedSearch[]
+
+  reviewsGiven     Review[]      @relation("ReviewAuthor")
+  reviewsReceived  Review[]      @relation("ReviewTarget")
+
+  // Fleet Management (Self-relation)
+  employerId       String?
+  employer         User?         @relation("Fleet", fields: [employerId], references: [id])
+  fleetDrivers     User[]        @relation("Fleet")
+
+  notifications    Notification[]
+  messagesSent     Message[]
+
+  @@index([deletedAt])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  link      String?  
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+}
+
+model SavedSearch {
+  id          String   @id @default(uuid())
+  name        String
+  originCity  String?
+  destCity    String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+}
+
+
+model Load {
+  id             String        @id @default(uuid())
+  originZip      String
+  originCity     String
+  originAddress  String?
+  destZip        String
+  destCity       String
+  destAddress    String?
+  price          Float
+  distance       Float         
+  status         LoadStatus    @default(AVAILABLE)
+  
+  // NOVOS CAMPOS DE DATA REAIS
+  pickupDate     DateTime?     
+  deliveryDate   DateTime?     
+
+  vehiclesData   Json          @default("[]")
+  trailerType    String        @default("OPEN")
+  paymentType    String        @default("COD") 
+  
+  currentLat     Float?        
+  currentLng     Float?        
+  driverSignature String?
+  pickupPhotos      Json?     // Galeria comprimida (Frente, Lado, etc.)
+  pickupDamages     Json?     // Mapa 2D com as coordenadas dos danos e códigos AIAG
+  pickupVin         String?   // VIN Scanned
+  pickupVinPhoto    String?   // Base64 VIN Photo
+
+  podDocumentUrl    String?   // Base64 ou URL real do comprovante de entrega (POD/BOL)
+
+  deliverySignature String?   // Base64 Signature
+  deliveryPhotos    Json?
+  deliveryDamages   Json?     // Mapa 2D com as coordenadas dos danos na entrega
+  deliveryVin       String?
+  deliveryVinPhoto  String?   // Base64 VIN Photo
+  
+  brokerId       String
+  broker         User          @relation("BrokerLoads", fields: [brokerId], references: [id], onDelete: Cascade)
+  
+  carrierId      String?
+  carrier        User?         @relation("CarrierLoads", fields: [carrierId], references: [id], onDelete: SetNull)
+  
+  driverId       String?
+  driver         User?         @relation("DriverLoads", fields: [driverId], references: [id], onDelete: SetNull)
+  
+  requests       LoadRequest[]
+  reviews        Review[]
+  messages       Message[]
+  locationHistory LocationHistory[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @default(now()) @updatedAt
+  deletedAt      DateTime?
+
+  @@index([brokerId])
+  @@index([carrierId])
+  @@index([driverId, status])
+  @@index([status])
+  @@index([status, createdAt])
+  
+  // Performance Indexes for Loadboard Searches
+  @@index([originCity])
+  @@index([destCity])
+  @@index([originZip])
+  @@index([destZip])
+  @@index([distance])
+  @@index([deletedAt])
+}
+
+model LoadRequest {
+  id        String        @id @default(uuid())
+  loadId    String
+  load      Load          @relation(fields: [loadId], references: [id], onDelete: Cascade)
+  carrierId String
+  carrier   User          @relation(fields: [carrierId], references: [id], onDelete: Cascade)
+  status    RequestStatus @default(PENDING)
+  bidPrice  Float?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @default(now()) @updatedAt
+
+  @@index([carrierId, status])
+  @@index([loadId])
+  @@index([loadId, status])
+}
+
+model Review {
+  id          String   @id @default(uuid())
+  rating      Int      // 1-5 stars
+  comment     String?
+  
+  loadId      String
+  load        Load     @relation(fields: [loadId], references: [id], onDelete: Cascade)
+  
+  authorId    String
+  author      User     @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  
+  targetId    String
+  target      User     @relation("ReviewTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+
+  @@unique([loadId, authorId]) // One review per person per load
+}
+
+model LocationHistory {
+  id        String   @id @default(uuid())
+  lat       Float
+  lng       Float
+  timestamp DateTime @default(now())
+
+  loadId    String
+  load      Load     @relation(fields: [loadId], references: [id], onDelete: Cascade)
+
+  @@index([loadId, timestamp])
+  @@index([timestamp])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  loadId    String
+  load      Load     @relation(fields: [loadId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([loadId, createdAt])
+}
