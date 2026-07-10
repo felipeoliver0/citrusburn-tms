@@ -4,6 +4,7 @@ import Link from 'next/link';
 import RevenueChart from './RevenueChart';
 import StatusChart from './StatusChart';
 import TopRoutesChart from './TopRoutesChart';
+import OnboardingChecklist from './OnboardingChecklist';
 
 export default async function BrokerDashboard({ userId }: { userId: string }) {
   const activeLoads = await prisma.load.count({
@@ -18,6 +19,21 @@ export default async function BrokerDashboard({ userId }: { userId: string }) {
     where: { load: { brokerId: userId }, status: 'PENDING' }
   });
 
+  const totalLoadsPosted = await prisma.load.count({
+    where: { brokerId: userId }
+  });
+
+  const loadsWithCarrier = await prisma.load.count({
+    where: { brokerId: userId, carrierId: { not: null } }
+  });
+
+  const profile = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { companyName: true, phone: true, companyAddress: true }
+  });
+
+  const profileComplete = !!(profile?.companyName && profile?.phone && profile?.companyAddress);
+
   const recentLoads = await prisma.load.findMany({
     where: { brokerId: userId },
     orderBy: { createdAt: 'desc' },
@@ -30,7 +46,7 @@ export default async function BrokerDashboard({ userId }: { userId: string }) {
     where: { brokerId: userId, status: 'DELIVERED', distance: { gt: 0 } },
     select: { price: true, distance: true }
   });
-  
+
   let avgPricePerMile = 0;
   if (allDeliveredLoads.length > 0) {
     const totalDistance = allDeliveredLoads.reduce((sum, load) => sum + load.distance, 0);
@@ -81,7 +97,7 @@ export default async function BrokerDashboard({ userId }: { userId: string }) {
   const chartData = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
-    
+
     const dayVolume = recentPostedLoads
       .filter(load => {
         const loadDate = new Date(load.createdAt);
@@ -95,8 +111,34 @@ export default async function BrokerDashboard({ userId }: { userId: string }) {
     };
   });
 
+  const onboardingSteps = [
+    {
+      label: 'Complete your company profile',
+      description: 'Company name, phone, and address help carriers trust your loads.',
+      href: '/account',
+      cta: 'Complete profile',
+      done: profileComplete,
+    },
+    {
+      label: 'Post your first load',
+      description: 'Get your freight in front of verified carriers.',
+      href: '/new-load',
+      cta: 'Post a load',
+      done: totalLoadsPosted > 0,
+    },
+    {
+      label: 'Get matched with a carrier',
+      description: 'Review requests and assign a carrier to your load.',
+      href: '/broker-requests',
+      cta: 'Review requests',
+      done: loadsWithCarrier > 0,
+    },
+  ];
+
   return (
     <div className="space-y-8">
+      <OnboardingChecklist steps={onboardingSteps} />
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <SummaryCard icon={<Package />} label="Active Posted Loads" value={activeLoads.toString()} color="text-brand-600" bg="bg-brand-50" border="border-brand-200" />
         <SummaryCard icon={<CheckCircle />} label="Delivered Loads" value={deliveredLoads.toString()} color="text-emerald-600" bg="bg-emerald-50" border="border-emerald-200" />
