@@ -1,12 +1,19 @@
 'use client';
 
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import Link from 'next/link';
 
 export default function StatusChart({ data }: { data: any[] }) {
   if (!data || data.length === 0) {
     return (
-      <div className="h-[300px] w-full flex items-center justify-center text-gray-400 bg-gray-50/50 rounded-xl border border-gray-100">
-        No active loads.
+      <div className="h-[300px] w-full flex flex-col items-center justify-center gap-3 text-gray-400 bg-gray-50/50 rounded-xl border border-gray-100">
+        <span>No active loads.</span>
+        <Link
+          href="/loadboard"
+          className="text-sm font-bold text-brand-600 hover:text-brand-700 bg-white border border-brand-200 px-4 py-2 rounded-full transition-colors"
+        >
+          Browse the loadboard &rarr;
+        </Link>
       </div>
     );
   }
@@ -38,13 +45,13 @@ export default function StatusChart({ data }: { data: any[] }) {
               <Cell key={`cell-${index}`} fill={(COLORS as any)[entry.name] || '#94a3b8'} />
             ))}
           </Pie>
-          <Tooltip 
+          <Tooltip
             contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
             itemStyle={{ color: '#0f172a', fontWeight: 'bold' }}
             formatter={(value: any) => [value, 'Loads']}
           />
-          <Legend 
-            verticalAlign="bottom" 
+          <Legend
+            verticalAlign="bottom"
             height={36}
             iconType="circle"
             formatter={(value) => <span className="text-sm font-medium text-gray-600">{value}</span>}
