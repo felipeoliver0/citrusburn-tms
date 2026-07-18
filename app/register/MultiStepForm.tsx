@@ -37,6 +37,12 @@ export default function MultiStepForm() {
       if (!formData.companyName) {
         return setError('Company Name is required.');
       }
+      if (!formData.usdotNumber) {
+        return setError('USDOT # is required.');
+      }
+      if (!formData.mcNumber) {
+        return setError('MC # is required.');
+      }
     }
 
     setStep(prev => prev + 1);
@@ -166,12 +172,12 @@ export default function MultiStepForm() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-black text-gray-500 uppercase tracking-widest mb-2">USDOT #</label>
-                <input type="text" name="usdotNumber" value={formData.usdotNumber || ''} onChange={handleChange} className="w-full bg-gray-50 border border-gray-300 rounded-xl py-4 px-4 text-base text-gray-900 focus:outline-none focus:border-brand-500 font-bold" placeholder="Optional" />
+                <label className="block text-sm font-black text-gray-500 uppercase tracking-widest mb-2">USDOT # *</label>
+                <input type="text" name="usdotNumber" value={formData.usdotNumber || ''} onChange={handleChange} required className="w-full bg-gray-50 border border-gray-300 rounded-xl py-4 px-4 text-base text-gray-900 focus:outline-none focus:border-brand-500 font-bold" placeholder="e.g. 1234567" />
               </div>
               <div>
-                <label className="block text-sm font-black text-gray-500 uppercase tracking-widest mb-2">MC #</label>
-                <input type="text" name="mcNumber" value={formData.mcNumber || ''} onChange={handleChange} className="w-full bg-gray-50 border border-gray-300 rounded-xl py-4 px-4 text-base text-gray-900 focus:outline-none focus:border-brand-500 font-bold" placeholder="Optional" />
+                <label className="block text-sm font-black text-gray-500 uppercase tracking-widest mb-2">MC # *</label>
+                <input type="text" name="mcNumber" value={formData.mcNumber || ''} onChange={handleChange} required className="w-full bg-gray-50 border border-gray-300 rounded-xl py-4 px-4 text-base text-gray-900 focus:outline-none focus:border-brand-500 font-bold" placeholder="e.g. MC-12345" />
               </div>
             </div>
 
