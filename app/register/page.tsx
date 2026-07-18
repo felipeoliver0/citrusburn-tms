@@ -14,7 +14,7 @@ export default async function Register({
     <div className="min-h-screen w-full flex font-sans bg-gray-50 selection:bg-brand-500 selection:text-white">
       
       {/* Center Column: Form Area */}
-      <div className="w-full flex flex-col items-center justify-center bg-white p-8 sm:p-12 xl:p-24 relative overflow-y-auto shadow-2xl">
+      <div className="w-full flex flex-col items-center justify-center bg-white p-6 relative overflow-y-auto shadow-2xl">
         <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-200/30 rounded-full blur-[100px] pointer-events-none" />
         
         <div className="absolute top-6 left-6 z-20">
@@ -23,7 +23,7 @@ export default async function Register({
           </Link>
         </div>
 
-        <div className="w-full max-w-xl mx-auto animate-fade-in mt-12 relative z-10">
+        <div className="w-full max-w-xl mx-auto animate-fade-in relative z-10">
           
           <div className="flex items-center justify-center gap-3 mb-10">
             <div className="w-12 h-12 bg-gradient-to-br from-brand-500 to-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/30">
