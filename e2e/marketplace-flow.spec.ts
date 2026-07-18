@@ -55,21 +55,21 @@ test.describe('E2E Marketplace Flow', () => {
     const carrierPage = await carrierContext.newPage();
 
     // 1. Broker logs in
-    await brokerPage.goto('https://citrusburn-tms.vercel.app/login');
+    await brokerPage.goto('https://axlegrid-tms.vercel.app/login');
     await brokerPage.fill('input[name="email"]', brokerEmail);
     await brokerPage.fill('input[name="password"]', password);
     await brokerPage.click('button[type="submit"]');
     await expect(brokerPage).toHaveURL(/.*\/dashboard/);
 
     // 2. Carrier logs in
-    await carrierPage.goto('https://citrusburn-tms.vercel.app/login');
+    await carrierPage.goto('https://axlegrid-tms.vercel.app/login');
     await carrierPage.fill('input[name="email"]', carrierEmail);
     await carrierPage.fill('input[name="password"]', password);
     await carrierPage.click('button[type="submit"]');
     await expect(carrierPage).toHaveURL(/.*\/dashboard/);
 
     // 3. Broker creates a load
-    await brokerPage.goto('https://citrusburn-tms.vercel.app/new-load');
+    await brokerPage.goto('https://axlegrid-tms.vercel.app/new-load');
     await brokerPage.fill('input[name="originAddress"]', '123 E2E Origin St');
     await brokerPage.fill('input[name="originCity"]', 'Miami');
     await brokerPage.fill('input[name="originZip"]', '33101');
@@ -89,7 +89,7 @@ test.describe('E2E Marketplace Flow', () => {
     await brokerPage.waitForSelector('text=Miami 33101');
 
     // 4. Carrier finds and requests load
-    await carrierPage.goto('https://citrusburn-tms.vercel.app/loadboard');
+    await carrierPage.goto('https://axlegrid-tms.vercel.app/loadboard');
     await carrierPage.locator('input[placeholder="City or Zip"]').first().fill('Miami');
     await carrierPage.keyboard.press('Enter');
     await carrierPage.waitForTimeout(2000); // Give it time to debounce/fetch
@@ -109,11 +109,11 @@ test.describe('E2E Marketplace Flow', () => {
     }
 
     // 5. Broker approves the request
-    await brokerPage.goto('https://citrusburn-tms.vercel.app/broker-requests');
+    await brokerPage.goto('https://axlegrid-tms.vercel.app/broker-requests');
     await brokerPage.click('button:has-text("Approve")'); 
 
     // 6. Carrier starts pickup
-    await carrierPage.goto('https://citrusburn-tms.vercel.app/driver');
+    await carrierPage.goto('https://axlegrid-tms.vercel.app/driver');
     await carrierPage.click('text=Start Pickup Inspection'); // Or similar action
     
     // We stop the test here as it proves the core marketplace connection

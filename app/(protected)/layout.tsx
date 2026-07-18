@@ -1,7 +1,6 @@
 import { ReactNode } from 'react';
 import Sidebar from './Sidebar';
 import { verifySession } from '@/lib/dal';
-import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import DriverTracker from './DriverTracker';
 import NotificationBell from '@/app/components/NotificationBell';

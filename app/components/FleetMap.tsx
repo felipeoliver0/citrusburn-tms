@@ -60,10 +60,46 @@ function BoundsFitter({ loads }: { loads: ActiveLoadMapData[] }) {
 
 export default function FleetMap({ loads }: FleetMapProps) {
   const [mounted, setMounted] = useState(false);
+  const [liveLoads, setLiveLoads] = useState<ActiveLoadMapData[]>(loads);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    setLiveLoads(loads); // sync if props change
+
+    const eventSource = new EventSource('/api/tracking/stream');
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'update' && data.loads) {
+          // Merge incoming load updates with existing state
+          setLiveLoads((prevLoads) => {
+            const nextLoads = [...prevLoads];
+            for (const updatedLoad of data.loads) {
+              const index = nextLoads.findIndex((l) => l.id === updatedLoad.id);
+              if (index !== -1) {
+                // Update coordinates while preserving existing data like originCity, destCity, etc.
+                nextLoads[index] = {
+                  ...nextLoads[index],
+                  currentLat: updatedLoad.currentLat,
+                  currentLng: updatedLoad.currentLng,
+                  // driverName could also be updated if we want:
+                  // driverName: `${updatedLoad.driver.firstName} ${updatedLoad.driver.lastName}`,
+                };
+              }
+            }
+            return nextLoads;
+          });
+        }
+      } catch (err) {
+        console.error('SSE Message parsing error:', err);
+      }
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [loads]);
 
   if (!mounted) return <div className="w-full h-[70vh] min-h-[500px] bg-gray-100 animate-pulse rounded-2xl flex items-center justify-center text-gray-400 border-4 border-gray-200">Loading Map Engine...</div>;
 
@@ -78,13 +114,13 @@ export default function FleetMap({ loads }: FleetMapProps) {
         style={{ height: '100%', width: '100%', minHeight: '500px' }}
       >
         <MapResizer />
-        <BoundsFitter loads={loads} />
+        <BoundsFitter loads={liveLoads} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {loads.map(load => (
+        {liveLoads.map(load => (
           <Marker key={load.id} position={[load.currentLat, load.currentLng]} icon={truckIcon}>
             <Popup>
               <div className="text-xs">
