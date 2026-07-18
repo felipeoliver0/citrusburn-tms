@@ -39,20 +39,7 @@ const nextConfig: NextConfig = {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin'
           },
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline'",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://unpkg.com https://*.public.blob.vercel-storage.com https://*.vercel-storage.com",
-              "connect-src 'self' https://nominatim.openstreetmap.org https://router.project-osrm.org https://*.stripe.com",
-              "frame-ancestors 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-            ].join('; ')
-          },
+
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=(self)'

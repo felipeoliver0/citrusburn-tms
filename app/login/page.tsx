@@ -131,6 +131,7 @@ export default async function Login({
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-sm font-black text-gray-500 uppercase tracking-widest">Password</label>
+                <Link href="/forgot-password" className="text-sm text-brand-600 hover:text-brand-500 font-bold transition-colors">Forgot?</Link>
               </div>
               <input 
                 type="password" 

@@ -9,11 +9,34 @@ const publicPaths = ['/', '/login', '/register', '/verify', '/terms', '/privacy'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // --- Global Security: Strip spoofed auth headers on ALL requests ---
-  // Prevents external clients from injecting x-user-id / x-user-role
+  // --- Global Security: CSP and Headers ---
   const requestHeaders = new Headers(request.headers);
   requestHeaders.delete('x-user-id');
   requestHeaders.delete('x-user-role');
+
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+  const cspHeader = `
+    default-src 'self';
+    script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src 'self' https://fonts.gstatic.com;
+    img-src 'self' data: blob: https://*.tile.openstreetmap.org https://unpkg.com https://*.public.blob.vercel-storage.com https://*.vercel-storage.com;
+    connect-src 'self' https://nominatim.openstreetmap.org https://router.project-osrm.org https://*.stripe.com;
+    frame-ancestors 'none';
+    base-uri 'self';
+    form-action 'self';
+  `;
+
+  // Replace newline characters and spaces
+  const contentSecurityPolicyHeaderValue = cspHeader
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+  requestHeaders.set('x-nonce', nonce);
+  requestHeaders.set(
+    'Content-Security-Policy',
+    contentSecurityPolicyHeaderValue
+  );
 
   // Determine if this is a public path
   const isPublicPath =
@@ -35,9 +58,11 @@ export async function middleware(request: NextRequest) {
   const isStripeWebhook = pathname === '/api/stripe/webhook';
 
   if (isPublicPath || isCronRoute || isStripeWebhook) {
-    return NextResponse.next({
+    const response = NextResponse.next({
       request: { headers: requestHeaders },
     });
+    response.headers.set('Content-Security-Policy', contentSecurityPolicyHeaderValue);
+    return response;
   }
 
   // --- Everything else requires authentication ---
@@ -69,6 +94,8 @@ export async function middleware(request: NextRequest) {
     const response = NextResponse.next({
       request: { headers: requestHeaders },
     });
+    
+    response.headers.set('Content-Security-Policy', contentSecurityPolicyHeaderValue);
 
     // Sliding session: If token expires in less than 1 hour, issue a new one
     const currentTime = Math.floor(Date.now() / 1000);

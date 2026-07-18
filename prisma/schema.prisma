@@ -71,6 +71,8 @@ model User {
   onboardingCompleted Boolean    @default(false)
   verificationCode String?  
   verificationCodeExpiry DateTime?
+  resetPasswordCode String?
+  resetPasswordExpiry DateTime?
   subscriptionStatus     SubscriptionStatus @default(NONE)
   stripeCustomerId       String?            @unique
   stripeSubscriptionId   String?            @unique
