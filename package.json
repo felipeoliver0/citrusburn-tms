@@ -14,7 +14,6 @@
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
     "@prisma/client": "^6.19.3",
-    "@sentry/nextjs": "^10.66.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/react-signature-canvas": "^1.0.7",
     "@upstash/redis": "^1.38.0",
