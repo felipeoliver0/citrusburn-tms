@@ -5,6 +5,7 @@ import { getSession } from '@/lib/dal';
 import { hashPassword } from '@/lib/hash';
 import { revalidatePath } from 'next/cache';
 import { isRateLimited } from '@/lib/rateLimit';
+import { logAudit } from '@/lib/audit';
 
 import { CreateDriverSchema } from '@/lib/validations';
 
@@ -43,7 +44,7 @@ export async function createDriverAction(formData: FormData) {
 
   const hashedPassword = await hashPassword(password);
 
-  await prisma.user.create({
+  const newDriver = await prisma.user.create({
     data: {
       email,
       passwordHash: hashedPassword,
@@ -54,6 +55,8 @@ export async function createDriverAction(formData: FormData) {
       emailVerified: true
     }
   });
+
+  await logAudit(userId, 'DRIVER_CREATED', 'User', newDriver.id, { email });
 
   revalidatePath('/fleet');
 }
@@ -77,6 +80,8 @@ export async function deleteDriverAction(driverId: string) {
     where: { id: driverId },
     data: { deletedAt: new Date(), employerId: null }
   });
+
+  await logAudit(userId, 'DRIVER_DELETED', 'User', driverId);
 
   revalidatePath('/fleet');
 }

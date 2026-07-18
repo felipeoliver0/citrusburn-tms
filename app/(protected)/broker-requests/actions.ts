@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/dal';
 import { revalidatePath } from 'next/cache';
 import { createNotification } from '@/lib/notifications';
+import { logAudit } from '@/lib/audit';
 import { z } from 'zod';
 
 export async function approveRequestAction(formData: FormData) {
@@ -68,6 +69,8 @@ export async function approveRequestAction(formData: FormData) {
 
   revalidatePath('/broker-requests');
   revalidatePath('/loadboard');
+
+  await logAudit(userId, 'REQUEST_APPROVED', 'LoadRequest', requestId, { loadId: request.loadId, carrierId: request.carrierId });
 }
 
 export async function rejectRequestAction(formData: FormData) {
@@ -102,4 +105,6 @@ export async function rejectRequestAction(formData: FormData) {
   );
 
   revalidatePath('/broker-requests');
+
+  await logAudit(userId, 'REQUEST_REJECTED', 'LoadRequest', requestId, { loadId: request.loadId, carrierId: request.carrierId });
 }

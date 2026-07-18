@@ -4,6 +4,7 @@ import { getSession } from '@/lib/dal';
 import { CreateLoadSchema } from '@/lib/validations';
 import { revalidatePath } from 'next/cache';
 import { isRateLimited } from '@/lib/rateLimit';
+import { logAudit } from '@/lib/audit';
 
 export async function POST(req: Request) {
   try {
@@ -70,6 +71,9 @@ export async function POST(req: Request) {
     });
 
     revalidatePath('/loadboard');
+
+    // Audit log
+    await logAudit(userId, 'LOAD_CREATED', 'Load', newLoad.id, { price, distance, originCity, destCity });
 
     return NextResponse.json({ success: true, loadId: newLoad.id });
   } catch (error) {

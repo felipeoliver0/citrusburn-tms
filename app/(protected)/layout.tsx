@@ -1,6 +1,8 @@
 import { ReactNode } from 'react';
 import Sidebar from './Sidebar';
 import { verifySession } from '@/lib/dal';
+import prisma from '@/lib/prisma';
+import { redirect } from 'next/navigation';
 import DriverTracker from './DriverTracker';
 import NotificationBell from '@/app/components/NotificationBell';
 import Breadcrumbs from '@/app/components/Breadcrumbs';
@@ -8,6 +10,15 @@ import Breadcrumbs from '@/app/components/Breadcrumbs';
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const session = await verifySession();
   const role = session.role || 'CARRIER';
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { onboardingCompleted: true }
+  });
+
+  if (user && !user.onboardingCompleted) {
+    redirect('/onboarding');
+  }
 
   return (
     <div className="flex h-screen bg-gray-50 text-gray-900 overflow-hidden font-sans">

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/dal';
 import { UpdateLoadSchema } from '@/lib/validations';
 import { isRateLimited } from '@/lib/rateLimit';
+import { logAudit } from '@/lib/audit';
 
 export async function POST(req: Request) {
   try {
@@ -54,6 +55,9 @@ export async function POST(req: Request) {
     if (result.count === 0) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
+
+    // Audit log
+    await logAudit(userId, 'LOAD_UPDATED', 'Load', loadId, { price, distance, originCity, destCity });
 
     return NextResponse.json({ success: true });
   } catch (error) {
