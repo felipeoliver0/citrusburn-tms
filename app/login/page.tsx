@@ -104,7 +104,7 @@ export default async function Login({
             <div className="w-12 h-12 bg-brand-600 rounded-xl flex items-center justify-center font-bold shadow-lg shadow-brand-500/30">
               <Truck className="w-6 h-6 text-white" />
             </div>
-            <span className="font-black tracking-tight text-gray-900 text-2xl">America Dispatch</span>
+            <span className="font-black tracking-tight text-gray-900 text-2xl">AxleGrid</span>
           </div>
 
           <h1 className="text-4xl font-black tracking-tight text-gray-900 mb-3">Welcome Back</h1>

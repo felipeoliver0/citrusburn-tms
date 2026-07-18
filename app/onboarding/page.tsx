@@ -27,7 +27,7 @@ export default async function OnboardingPage() {
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-6">
               <Truck size={24} className="text-white" />
             </div>
-            <h2 className="text-3xl font-black mb-4 tracking-tight leading-tight">Welcome to America Dispatch!</h2>
+            <h2 className="text-3xl font-black mb-4 tracking-tight leading-tight">Welcome to AxleGrid!</h2>
             <p className="text-indigo-100 font-medium text-lg leading-relaxed">
               Let's get your profile set up so you can start {isBroker ? 'posting loads' : 'finding freight'} immediately.
             </p>

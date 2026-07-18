@@ -15,28 +15,28 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Acceptance of Terms</h2>
             <p className="text-gray-600 mb-4">
-              By accessing or using the America Dispatch TMS platform, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service.
+              By accessing or using the AxleGrid TMS platform, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">2. FMCSA Compliance</h2>
             <p className="text-gray-600 mb-4">
-              All Carriers and Brokers utilizing America Dispatch TMS must maintain active operating authority, insurance, and surety bonds as required by the Federal Motor Carrier Safety Administration (FMCSA). It is the sole responsibility of the Carrier to ensure their Cargo Liability Insurance and Auto Liability Insurance remain active and meet or exceed federal minimums.
+              All Carriers and Brokers utilizing AxleGrid TMS must maintain active operating authority, insurance, and surety bonds as required by the Federal Motor Carrier Safety Administration (FMCSA). It is the sole responsibility of the Carrier to ensure their Cargo Liability Insurance and Auto Liability Insurance remain active and meet or exceed federal minimums.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">3. Cargo Liability Exemption</h2>
             <p className="text-gray-600 mb-4">
-              America Dispatch TMS operates solely as a technology platform connecting Carriers, Brokers, and Dealers. We do not take possession of, transport, or broker freight. We hold no liability for damaged, lost, or stolen vehicles. Any claims must be resolved directly between the Shipper/Broker and the Carrier using the Electronic Bill of Lading (eBOL) generated on our platform.
+              AxleGrid TMS operates solely as a technology platform connecting Carriers, Brokers, and Dealers. We do not take possession of, transport, or broker freight. We hold no liability for damaged, lost, or stolen vehicles. Any claims must be resolved directly between the Shipper/Broker and the Carrier using the Electronic Bill of Lading (eBOL) generated on our platform.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Payment Terms</h2>
             <p className="text-gray-600 mb-4">
-              Payment terms for transported loads are strictly between the Carrier and the Broker or Shipper. America Dispatch TMS provides invoicing generation tools and tracking, but is not responsible for the collection, remittance, or guarantee of any freight charges, COD (Cash on Delivery), or COP (Cash on Pickup) payments.
+              Payment terms for transported loads are strictly between the Carrier and the Broker or Shipper. AxleGrid TMS provides invoicing generation tools and tracking, but is not responsible for the collection, remittance, or guarantee of any freight charges, COD (Cash on Delivery), or COP (Cash on Pickup) payments.
             </p>
           </section>
 
@@ -73,7 +73,7 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Liability Limitation</h2>
             <p className="text-gray-600">
-              In no event shall America Dispatch TMS, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.
+              In no event shall AxleGrid TMS, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.
             </p>
           </section>
 

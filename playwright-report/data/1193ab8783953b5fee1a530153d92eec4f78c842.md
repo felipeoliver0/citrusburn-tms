@@ -23,10 +23,10 @@ Test timeout of 30000ms exceeded.
     - complementary [ref=e3]:
       - button [ref=e4]:
         - img [ref=e5]
-      - link "A America Dispatch" [ref=e8] [cursor=pointer]:
+      - link "A AxleGrid" [ref=e8] [cursor=pointer]:
         - /url: /dashboard
         - generic [ref=e9]: A
-        - generic [ref=e10]: America Dispatch
+        - generic [ref=e10]: AxleGrid
       - navigation [ref=e11]:
         - link "Dashboard" [ref=e12] [cursor=pointer]:
           - /url: /dashboard

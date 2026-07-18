@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'America Dispatch TMS',
+    name: 'AxleGrid TMS',
     short_name: 'TMS',
     description: 'The #1 Transportation Management System for modern Brokers and Carriers.',
     start_url: '/',

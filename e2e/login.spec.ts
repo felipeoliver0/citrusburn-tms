@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('has title', async ({ page }) => {
   await page.goto('/login');
-  await expect(page).toHaveTitle(/America Dispatch|Login/);
+  await expect(page).toHaveTitle(/AxleGrid|Login/);
 });
 
 test('enforces rate limit after 5 failed login attempts', async ({ page }) => {

@@ -3,14 +3,14 @@
 export async function fetchRouteCoordinates(origin: string, dest: string) {
   try {
     // 1. Geocode Origin
-    const originRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(origin)}&format=json&limit=1`, { headers: { 'User-Agent': 'America Dispatch-TMS' } });
+    const originRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(origin)}&format=json&limit=1`, { headers: { 'User-Agent': 'AxleGrid-TMS' } });
     const originData = await originRes.json();
     if (!originData || originData.length === 0) return null;
     const originLat = parseFloat(originData[0].lat);
     const originLon = parseFloat(originData[0].lon);
 
     // 2. Geocode Destination
-    const destRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(dest)}&format=json&limit=1`, { headers: { 'User-Agent': 'America Dispatch-TMS' } });
+    const destRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(dest)}&format=json&limit=1`, { headers: { 'User-Agent': 'AxleGrid-TMS' } });
     const destData = await destRes.json();
     if (!destData || destData.length === 0) return null;
     const destLat = parseFloat(destData[0].lat);

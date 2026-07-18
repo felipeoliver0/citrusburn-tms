@@ -23,11 +23,11 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "America Dispatch TMS | Smart Logistics Platform",
+  title: "AxleGrid TMS | Smart Logistics Platform",
   description: "The #1 Transportation Management System for modern Brokers and Carriers. Find loads, dispatch drivers, and manage your fleet.",
   appleWebApp: {
     capable: true,
-    title: "America Dispatch TMS",
+    title: "AxleGrid TMS",
     statusBarStyle: "default",
   },
 };

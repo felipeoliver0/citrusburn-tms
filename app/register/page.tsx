@@ -29,7 +29,7 @@ export default async function Register({
             <div className="w-12 h-12 bg-gradient-to-br from-brand-500 to-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/30">
               <Truck className="w-6 h-6 text-white" />
             </div>
-            <span className="font-black tracking-tight text-gray-900 text-2xl">America Dispatch</span>
+            <span className="font-black tracking-tight text-gray-900 text-2xl">AxleGrid</span>
           </div>
 
           {error && (

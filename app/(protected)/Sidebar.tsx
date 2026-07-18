@@ -50,7 +50,7 @@ export default function Sidebar({ userRole }: { userRole: string }) {
         <div className={`p-6 flex items-center ${isCollapsed ? 'md:justify-center md:px-0' : 'gap-3'}`}>
         <Link href={userRole === 'DRIVER' ? '/driver' : '/dashboard'} className="flex items-center gap-3">
           <div className="w-8 h-8 shrink-0 bg-gradient-to-br from-brand-500 to-brand-700 rounded-lg flex items-center justify-center font-bold shadow-md shadow-brand-500/20 text-white">A</div>
-          <span className={`font-bold text-xl tracking-tight text-white truncate ${isCollapsed ? 'md:hidden' : ''}`}>America Dispatch</span>
+          <span className={`font-bold text-xl tracking-tight text-white truncate ${isCollapsed ? 'md:hidden' : ''}`}>AxleGrid</span>
         </Link>
       </div>
       <nav className="flex-1 px-4 py-6 space-y-2">

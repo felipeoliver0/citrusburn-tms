@@ -15,7 +15,7 @@ export default function Home() {
           <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/30 transform hover:rotate-12 transition-transform duration-300">
             <Truck className="text-white w-6 h-6" />
           </div>
-          <span className="text-2xl font-black tracking-tighter text-gray-900">America Dispatch</span>
+          <span className="text-2xl font-black tracking-tighter text-gray-900">AxleGrid</span>
         </div>
         <div className="flex items-center gap-6">
           <Link href="/login" className="text-sm font-bold text-gray-600 hover:text-blue-600 transition-colors">
@@ -61,7 +61,7 @@ export default function Home() {
       <section id="features" className="relative z-10 max-w-7xl mx-auto px-6 py-24 w-full">
         <div className="text-center mb-20">
           <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 tracking-tight">Everything you need to run the road</h2>
-          <p className="text-lg text-gray-500 font-medium max-w-2xl mx-auto leading-relaxed">Built by industry veterans, America Dispatch provides all the tools you need to dispatch, track, and bill without the headache.</p>
+          <p className="text-lg text-gray-500 font-medium max-w-2xl mx-auto leading-relaxed">Built by industry veterans, AxleGrid provides all the tools you need to dispatch, track, and bill without the headache.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -184,7 +184,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between">
           <div className="flex items-center gap-2 mb-4 md:mb-0 text-gray-500 font-bold">
             <ShieldCheck className="w-5 h-5 text-blue-600" />
-            <span className="text-sm">© 2026 America Dispatch TMS. All rights reserved.</span>
+            <span className="text-sm">© 2026 AxleGrid TMS. All rights reserved.</span>
           </div>
           <div className="flex gap-6 text-sm font-bold text-gray-500">
             <Link href="/privacy" className="hover:text-blue-600 transition-colors" target="_blank">Privacy Policy</Link>

@@ -78,13 +78,13 @@ export default async function Verify({
       await resend.emails.send({
         from: 'CitrusBurn TMS <onboarding@resend.dev>',
         to: userEmail,
-        subject: 'Your new verification code - America Dispatch TMS',
+        subject: 'Your new verification code - AxleGrid TMS',
         html: `
           <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-w: 600px; margin: 0 auto; background-color: #f8fafc; padding: 40px 20px;">
             <div style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
               <div style="background-color: #09090b; padding: 30px; text-align: center;">
                 <div style="display: inline-block; width: 48px; height: 48px; background-color: #2563eb; color: #ffffff; border-radius: 12px; font-size: 24px; font-weight: bold; line-height: 48px; margin-bottom: 12px;">H</div>
-                <h1 style="color: #ffffff; font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -0.5px;">America Dispatch TMS</h1>
+                <h1 style="color: #ffffff; font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -0.5px;">AxleGrid TMS</h1>
               </div>
               <div style="padding: 40px 30px;">
                 <h2 style="color: #0f172a; font-size: 20px; margin-top: 0; margin-bottom: 16px; font-weight: 700;">Hello!</h2>
@@ -144,7 +144,7 @@ export default async function Verify({
             <div className="w-12 h-12 bg-gradient-to-br from-brand-500 to-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/30">
               <Truck className="w-6 h-6 text-white" />
             </div>
-            <span className="font-black tracking-tight text-gray-900 text-2xl">America Dispatch</span>
+            <span className="font-black tracking-tight text-gray-900 text-2xl">AxleGrid</span>
           </div>
 
           <h1 className="text-4xl font-black tracking-tight text-gray-900 mb-3">Verify Email</h1>

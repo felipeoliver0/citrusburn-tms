@@ -14,7 +14,7 @@ export default function PrivacyPolicy() {
         <div className="space-y-8 text-base leading-relaxed">
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Information We Collect</h2>
-            <p className="mb-4">When you use America Dispatch TMS, we may collect the following types of information:</p>
+            <p className="mb-4">When you use AxleGrid TMS, we may collect the following types of information:</p>
             <ul className="list-disc pl-6 space-y-2 text-gray-600">
               <li><strong>Account Information:</strong> Name, email address, company name, phone number, EIN, and MC/USDOT Numbers.</li>
               <li><strong>Location Data:</strong> To provide load tracking, we collect GPS data from drivers when a load is marked as IN_TRANSIT.</li>
@@ -26,7 +26,7 @@ export default function PrivacyPolicy() {
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">2. California Consumer Privacy Act (CCPA) Compliance</h2>
             <p className="text-gray-600 mb-4">
-              Under the CCPA, California residents have the right to request access to their personal data, request deletion, and opt-out of the sale of personal information. America Dispatch TMS <strong>does not sell your personal or location data to third parties.</strong> GPS tracking is strictly utilized to facilitate logistics operations between the assigned Carrier and the Broker/Shipper.
+              Under the CCPA, California residents have the right to request access to their personal data, request deletion, and opt-out of the sale of personal information. AxleGrid TMS <strong>does not sell your personal or location data to third parties.</strong> GPS tracking is strictly utilized to facilitate logistics operations between the assigned Carrier and the Broker/Shipper.
             </p>
           </section>
 

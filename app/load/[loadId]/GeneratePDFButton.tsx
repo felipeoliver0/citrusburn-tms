@@ -110,7 +110,7 @@ export default function GeneratePDFButton({ load }: { load: any }) {
       doc.setFont("helvetica", "normal");
       doc.setTextColor(100, 116, 139);
       doc.text('This document serves as a binding rate confirmation agreement between Broker and Carrier.', 14, 280);
-      doc.text('Generated securely by America Dispatch TMS.', 14, 285);
+      doc.text('Generated securely by AxleGrid TMS.', 14, 285);
 
       doc.save(`Dispatch-Load-${load.id.substring(0,8)}.pdf`);
       toast.success('PDF Generated Successfully!');
