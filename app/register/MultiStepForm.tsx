@@ -34,15 +34,17 @@ export default function MultiStepForm() {
     }
     
     if (step === 2) {
-      if (!formData.companyName) {
-        return setError('Company Name is required.');
-      }
-      if (!formData.usdotNumber) {
-        return setError('USDOT # is required.');
-      }
-      if (!formData.mcNumber) {
-        return setError('MC # is required.');
-      }
+      if (!formData.companyName) return setError('Company Name is required.');
+      if (!formData.usdotNumber) return setError('USDOT # is required.');
+      if (!formData.mcNumber) return setError('MC # is required.');
+      if (!formData.companyCity) return setError('Company City is required.');
+      if (!formData.companyState) return setError('Company State is required.');
+    }
+
+    if (step === 3) {
+      if (!formData.ownerFirstName) return setError('Owner First Name is required.');
+      if (!formData.ownerLastName) return setError('Owner Last Name is required.');
+      if (!formData.phone) return setError('Business Phone is required.');
     }
 
     setStep(prev => prev + 1);
@@ -196,8 +198,8 @@ export default function MultiStepForm() {
               <label className="block text-sm font-black text-gray-500 uppercase tracking-widest mb-2">Company Address</label>
               <input type="text" name="companyAddress" value={formData.companyAddress || ''} onChange={handleChange} className="w-full bg-gray-50 border border-gray-300 rounded-xl py-4 px-4 text-base text-gray-900 focus:outline-none focus:border-brand-500 font-bold mb-3" placeholder="Street Address" />
               <div className="grid grid-cols-3 gap-3">
-                <input type="text" name="companyCity" value={formData.companyCity || ''} onChange={handleChange} className="w-full bg-gray-50 border border-gray-300 rounded-xl py-4 px-4 text-base text-gray-900 focus:outline-none focus:border-brand-500 font-bold" placeholder="City" />
-                <input type="text" name="companyState" value={formData.companyState || ''} onChange={handleChange} className="w-full bg-gray-50 border border-gray-300 rounded-xl py-4 px-4 text-base text-gray-900 focus:outline-none focus:border-brand-500 font-bold" placeholder="State/Prov" />
+                <input type="text" name="companyCity" value={formData.companyCity || ''} onChange={handleChange} required className="w-full bg-gray-50 border border-gray-300 rounded-xl py-4 px-4 text-base text-gray-900 focus:outline-none focus:border-brand-500 font-bold" placeholder="City *" />
+                <input type="text" name="companyState" value={formData.companyState || ''} onChange={handleChange} required className="w-full bg-gray-50 border border-gray-300 rounded-xl py-4 px-4 text-base text-gray-900 focus:outline-none focus:border-brand-500 font-bold" placeholder="State/Prov *" />
                 <input type="text" name="companyZip" value={formData.companyZip || ''} onChange={handleChange} className="w-full bg-gray-50 border border-gray-300 rounded-xl py-4 px-4 text-base text-gray-900 focus:outline-none focus:border-brand-500 font-bold" placeholder="Zip" />
               </div>
             </div>
@@ -220,19 +222,19 @@ export default function MultiStepForm() {
           <div className="space-y-5 animate-fade-in">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-black text-gray-500 uppercase tracking-widest mb-2">Owner First Name</label>
-                <input type="text" name="ownerFirstName" value={formData.ownerFirstName || ''} onChange={handleChange} className="w-full bg-gray-50 border border-gray-300 rounded-xl py-4 px-4 text-base text-gray-900 focus:outline-none focus:border-brand-500 font-bold" placeholder="First Name" />
+                <label className="block text-sm font-black text-gray-500 uppercase tracking-widest mb-2">Owner First Name *</label>
+                <input type="text" name="ownerFirstName" value={formData.ownerFirstName || ''} onChange={handleChange} required className="w-full bg-gray-50 border border-gray-300 rounded-xl py-4 px-4 text-base text-gray-900 focus:outline-none focus:border-brand-500 font-bold" placeholder="First Name" />
               </div>
               <div>
-                <label className="block text-sm font-black text-gray-500 uppercase tracking-widest mb-2">Owner Last Name</label>
-                <input type="text" name="ownerLastName" value={formData.ownerLastName || ''} onChange={handleChange} className="w-full bg-gray-50 border border-gray-300 rounded-xl py-4 px-4 text-base text-gray-900 focus:outline-none focus:border-brand-500 font-bold" placeholder="Last Name" />
+                <label className="block text-sm font-black text-gray-500 uppercase tracking-widest mb-2">Owner Last Name *</label>
+                <input type="text" name="ownerLastName" value={formData.ownerLastName || ''} onChange={handleChange} required className="w-full bg-gray-50 border border-gray-300 rounded-xl py-4 px-4 text-base text-gray-900 focus:outline-none focus:border-brand-500 font-bold" placeholder="Last Name" />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-black text-gray-500 uppercase tracking-widest mb-2">Business Phone</label>
-                <input type="text" name="phone" value={formData.phone || ''} onChange={handleChange} className="w-full bg-gray-50 border border-gray-300 rounded-xl py-4 px-4 text-base text-gray-900 focus:outline-none focus:border-brand-500 font-bold" placeholder="(XXX) XXX-XXXX" />
+                <label className="block text-sm font-black text-gray-500 uppercase tracking-widest mb-2">Business Phone *</label>
+                <input type="text" name="phone" value={formData.phone || ''} onChange={handleChange} required className="w-full bg-gray-50 border border-gray-300 rounded-xl py-4 px-4 text-base text-gray-900 focus:outline-none focus:border-brand-500 font-bold" placeholder="(XXX) XXX-XXXX" />
               </div>
               <div>
                 <label className="block text-sm font-black text-gray-500 uppercase tracking-widest mb-2">Cell Phone</label>
