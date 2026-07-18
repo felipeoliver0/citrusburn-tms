@@ -46,7 +46,7 @@ export async function handleResetPassword(formData: FormData) {
   await prisma.user.update({
     where: { email: user.email },
     data: {
-      password: hashedPassword,
+      passwordHash: hashedPassword,
       resetPasswordCode: null,
       resetPasswordExpiry: null
     }
