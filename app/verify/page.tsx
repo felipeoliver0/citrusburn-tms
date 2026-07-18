@@ -22,6 +22,17 @@ export default async function Verify({
     const userEmail = formData.get('email') as string;
     const code = formData.get('code') as string;
 
+    const { headers } = await import('next/headers');
+    const headersList = await headers();
+    const forwardedFor = headersList.get('x-forwarded-for');
+    const realIp = headersList.get('x-real-ip');
+    const ip = realIp || (forwardedFor ? forwardedFor.split(',')[0].trim() : 'unknown');
+
+    // Rate limit check: 20 attempts per IP to prevent brute-forcing the 6-digit code across accounts
+    if (await isRateLimited(`verify-ip:${ip}`, 20)) {
+      redirect(`/verify?email=${userEmail}&error=Too+many+attempts.+Please+try+again+later.`);
+    }
+
     // Rate limit check: 5 attempts per email to prevent brute-forcing the 6-digit code
     if (await isRateLimited(`verify-email:${userEmail}`, 5)) {
       redirect(`/verify?email=${userEmail}&error=Too+many+attempts.+Please+try+again+later.`);
@@ -76,7 +87,7 @@ export default async function Verify({
     if (process.env.RESEND_API_KEY) {
       const resend = new Resend(process.env.RESEND_API_KEY);
       await resend.emails.send({
-        from: 'CitrusBurn TMS <onboarding@resend.dev>',
+        from: 'AxleGrid TMS <onboarding@resend.dev>',
         to: userEmail,
         subject: 'Your new verification code - AxleGrid TMS',
         html: `

@@ -38,6 +38,14 @@ const AdvancedRegisterSchema = z.object({
   phone: z.string().optional(),
   cellPhone: z.string().optional(),
   howDidYouHear: z.string().optional(),
+}).refine((data) => {
+  if (data.role === 'CARRIER') {
+    return !!data.mcNumber && !!data.usdotNumber;
+  }
+  return true;
+}, {
+  message: "MC and USDOT numbers are required for Carriers",
+  path: ["mcNumber"],
 });
 
 export type RegisterFormData = z.infer<typeof AdvancedRegisterSchema>;
@@ -115,7 +123,7 @@ export async function processRegistration(data: RegisterFormData): Promise<{ suc
     if (process.env.RESEND_API_KEY) {
       const resend = new Resend(process.env.RESEND_API_KEY);
       await resend.emails.send({
-        from: 'CitrusBurn TMS <onboarding@resend.dev>',
+        from: 'AxleGrid TMS <onboarding@resend.dev>',
         to: validData.email,
         subject: 'Verify your email - AxleGrid TMS',
         html: `
