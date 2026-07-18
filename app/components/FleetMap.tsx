@@ -48,6 +48,17 @@ function MapResizer() {
   return null;
 }
 
+function BoundsFitter({ loads }: { loads: ActiveLoadMapData[] }) {
+  const map = useMap();
+  useEffect(() => {
+    if (loads.length > 0) {
+      const bounds = L.latLngBounds(loads.map(load => [load.currentLat, load.currentLng]));
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 8 });
+    }
+  }, [loads, map]);
+  return null;
+}
+
 export default function FleetMap({ loads }: FleetMapProps) {
   const [mounted, setMounted] = useState(false);
 
@@ -61,16 +72,17 @@ export default function FleetMap({ loads }: FleetMapProps) {
   const center: [number, number] = [39.8283, -98.5795];
 
   return (
-    <div className="w-full h-[70vh] min-h-[500px] z-0 relative rounded-2xl overflow-hidden shadow-2xl border-4 border-gray-800">
+    <div className="w-full h-[70vh] min-h-[500px] z-10 relative rounded-2xl overflow-hidden shadow-2xl border-4 border-gray-800">
       <MapContainer 
         center={center} 
         zoom={4} 
         style={{ height: '100%', width: '100%', minHeight: '500px' }}
       >
         <MapResizer />
+        <BoundsFitter loads={loads} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
         {loads.map(load => (
