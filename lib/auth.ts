@@ -3,6 +3,7 @@ import { SignJWT, jwtVerify, JWTPayload } from 'jose';
 export interface TokenPayload extends JWTPayload {
   userId: string;
   role: string;
+  onboardingCompleted: boolean;
 }
 
 // JWT_SECRET MUST be set in your .env file. 
@@ -16,7 +17,7 @@ if (!jwtSecretEnv) {
 }
 const JWT_SECRET = new TextEncoder().encode(jwtSecretEnv);
 
-export async function signToken(payload: { userId: string; role: string }): Promise<string> {
+export async function signToken(payload: { userId: string; role: string; onboardingCompleted: boolean }): Promise<string> {
   const token = await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()

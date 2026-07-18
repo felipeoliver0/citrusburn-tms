@@ -4,6 +4,8 @@ import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/dal';
 import { logAudit } from '@/lib/audit';
 import { redirect } from 'next/navigation';
+import { signToken } from '@/lib/auth';
+import { cookies } from 'next/headers';
 
 export async function completeOnboardingAction(formData: FormData) {
   const { userId } = await getSession();
@@ -31,6 +33,17 @@ export async function completeOnboardingAction(formData: FormData) {
   });
 
   await logAudit(userId, 'ONBOARDING_COMPLETED', 'User', userId, { companyName, mcNumber });
+
+  const { role } = await getSession();
+  const token = await signToken({ userId, role: role || 'CARRIER', onboardingCompleted: true });
+  const cookieStore = await cookies();
+  cookieStore.set('auth_token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7200,
+    path: '/'
+  });
 
   redirect('/dashboard');
 }

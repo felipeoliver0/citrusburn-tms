@@ -59,6 +59,7 @@ export async function middleware(request: NextRequest) {
     // Inject verified user info into downstream headers
     requestHeaders.set('x-user-id', payload.userId);
     requestHeaders.set('x-user-role', payload.role);
+    requestHeaders.set('x-user-onboarding', payload.onboardingCompleted ? 'true' : 'false');
 
     const roleRedirect = getRoleRedirect(payload.role, pathname);
     if (roleRedirect && !pathname.startsWith('/api/')) {
@@ -72,7 +73,7 @@ export async function middleware(request: NextRequest) {
     // Sliding session: If token expires in less than 1 hour, issue a new one
     const currentTime = Math.floor(Date.now() / 1000);
     if (payload.exp && (payload.exp - currentTime < 3600)) {
-      const newToken = await signToken({ userId: payload.userId, role: payload.role });
+      const newToken = await signToken({ userId: payload.userId, role: payload.role, onboardingCompleted: payload.onboardingCompleted });
       response.cookies.set({
         name: 'auth_token',
         value: newToken,

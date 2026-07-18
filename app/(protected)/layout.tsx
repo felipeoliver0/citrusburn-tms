@@ -11,12 +11,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const session = await verifySession();
   const role = session.role || 'CARRIER';
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.userId },
-    select: { onboardingCompleted: true }
-  });
-
-  if (user && !user.onboardingCompleted) {
+  if (!session.onboardingCompleted) {
     redirect('/onboarding');
   }
 

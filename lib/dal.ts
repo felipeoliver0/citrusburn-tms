@@ -12,12 +12,13 @@ export const verifySession = cache(async () => {
   const headersList = await headers();
   const userId = headersList.get('x-user-id');
   const role = headersList.get('x-user-role');
+  const onboardingCompleted = headersList.get('x-user-onboarding') === 'true';
 
   if (!userId) {
     redirect('/login');
   }
 
-  return { isAuth: true, userId, role };
+  return { isAuth: true, userId, role, onboardingCompleted };
 });
 
 /**
@@ -28,6 +29,7 @@ export const getSession = cache(async () => {
   const headersList = await headers();
   const userId = headersList.get('x-user-id');
   const role = headersList.get('x-user-role');
+  const onboardingCompleted = headersList.get('x-user-onboarding') === 'true';
   
-  return { isAuth: !!userId, userId, role };
+  return { isAuth: !!userId, userId, role, onboardingCompleted };
 });

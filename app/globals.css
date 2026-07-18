@@ -2,16 +2,16 @@
 @import "leaflet/dist/leaflet.css";
 
 @theme {
-  --color-brand-50: #eef2ff; /* indigo-50 */
-  --color-brand-100: #e0e7ff; /* indigo-100 */
-  --color-brand-200: #c7d2fe; /* indigo-200 */
-  --color-brand-300: #a5b4fc; /* indigo-300 */
-  --color-brand-400: #818cf8; /* indigo-400 */
-  --color-brand-500: #6366f1; /* indigo-500 */
-  --color-brand-600: #4f46e5; /* indigo-600 */
-  --color-brand-700: #4338ca; /* indigo-700 */
-  --color-brand-800: #3730a3; /* indigo-800 */
-  --color-brand-900: #312e81; /* indigo-900 */
+  --color-brand-50: #eff6ff; /* blue-50 */
+  --color-brand-100: #dbeafe; /* blue-100 */
+  --color-brand-200: #bfdbfe; /* blue-200 */
+  --color-brand-300: #93c5fd; /* blue-300 */
+  --color-brand-400: #60a5fa; /* blue-400 */
+  --color-brand-500: #3b82f6; /* blue-500 */
+  --color-brand-600: #2563eb; /* blue-600 */
+  --color-brand-700: #1d4ed8; /* blue-700 */
+  --color-brand-800: #1e40af; /* blue-800 */
+  --color-brand-900: #1e3a8a; /* blue-900 */
   
   --animate-fade-in-up: fade-in-up 0.8s ease-out forwards;
   --animate-fade-in: fade-in 1s ease-out forwards;
