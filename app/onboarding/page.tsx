@@ -11,7 +11,7 @@ export default async function OnboardingPage() {
     where: { id: session.userId }
   });
 
-  if (!user || user.onboardingCompleted) {
+  if (!user || user.onboardingCompleted || user.role === 'DRIVER') {
     redirect('/dashboard');
   }
 

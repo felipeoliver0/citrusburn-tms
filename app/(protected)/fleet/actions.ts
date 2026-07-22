@@ -52,7 +52,8 @@ export async function createDriverAction(formData: FormData) {
       phone,
       role: 'DRIVER',
       employerId: userId,
-      emailVerified: true
+      emailVerified: true,
+      onboardingCompleted: true
     }
   });
 

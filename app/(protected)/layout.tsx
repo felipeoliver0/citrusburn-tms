@@ -10,7 +10,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const session = await verifySession();
   const role = session.role || 'CARRIER';
 
-  if (!session.onboardingCompleted) {
+  if (!session.onboardingCompleted && role !== 'DRIVER') {
     redirect('/onboarding');
   }
 
