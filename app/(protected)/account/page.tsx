@@ -112,7 +112,7 @@ export default async function Conta(props: { searchParams: Promise<{ error?: str
       revalidatePath('/account');
       success = true;
     } catch (error) {
-      // Ignored
+      console.error('Error updating profile:', error instanceof Error ? error.message : 'Unknown error');
     }
 
     if (success) {

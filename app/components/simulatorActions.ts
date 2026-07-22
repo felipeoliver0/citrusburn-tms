@@ -1,7 +1,21 @@
 'use server';
 
+import { getSession } from '@/lib/dal';
+import { isRateLimited } from '@/lib/rateLimit';
+
 export async function fetchRouteCoordinates(origin: string, dest: string) {
   try {
+    const { userId } = await getSession();
+    if (!userId) {
+      console.error("Unauthorized access to simulatorActions");
+      return null;
+    }
+
+    if (await isRateLimited(`simulator:${userId}`, 10)) {
+      console.error("Rate limit exceeded for simulatorActions");
+      return null;
+    }
+
     // 1. Geocode Origin
     const originRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(origin)}&format=json&limit=1`, { headers: { 'User-Agent': 'AxleGrid-TMS' } });
     const originData = await originRes.json();

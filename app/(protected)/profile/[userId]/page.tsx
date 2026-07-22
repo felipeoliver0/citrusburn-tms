@@ -22,11 +22,8 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
       companyZip: true,
       mcNumber: true,
       usdotNumber: true,
-      ein: true,
       websiteUrl: true,
       yearEstablished: true,
-      bondNumber: true,
-      insuranceCertUrl: true,
       createdAt: true,
       reviewsReceived: {
         include: { author: { select: { id: true, companyName: true, fullName: true } } },
@@ -118,26 +115,7 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
                     <span className="font-bold">USDOT:</span> {profileUser.usdotNumber}
                   </div>
                 )}
-                {profileUser.ein && (
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400"><span className="font-bold">#</span></div>
-                    <span className="font-bold">EIN:</span> {profileUser.ein}
-                  </div>
-                )}
-                {profileUser.bondNumber && profileUser.role === 'BROKER' && (
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-500"><ShieldCheck size={14}/></div>
-                    <span className="font-bold">Bond:</span> {profileUser.bondNumber}
-                  </div>
-                )}
-                {profileUser.insuranceCertUrl && profileUser.role === 'CARRIER' && (
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500"><ShieldCheck size={14}/></div>
-                    <a href={profileUser.insuranceCertUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline font-medium">
-                      View Insurance Cert
-                    </a>
-                  </div>
-                )}
+
                 <div className="flex items-center gap-3 text-sm text-gray-600">
                   <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400"><CalendarDays size={14}/></div>
                   Member since {new Date(profileUser.createdAt).getFullYear()} {profileUser.yearEstablished && `(Est. ${profileUser.yearEstablished})`}

@@ -6,10 +6,10 @@ import prisma from '@/lib/prisma';
 import { NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest) {
-  const { isAuth, role } = await getSession();
+  const { isAuth, role, userId } = await getSession();
 
   // Only Brokers/Dealers/Admins should watch the live map
-  if (!isAuth || role === 'DRIVER') {
+  if (!isAuth || !userId || role === 'DRIVER') {
     return new Response('Unauthorized', { status: 403 });
   }
 
@@ -34,6 +34,10 @@ export async function GET(req: NextRequest) {
             updatedAt: {
               gt: lastCheckedTime,
             },
+            OR: [
+              { brokerId: userId },
+              { carrierId: userId },
+            ],
           };
 
           if (loadId) {
