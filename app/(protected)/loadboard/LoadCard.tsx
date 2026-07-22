@@ -138,42 +138,75 @@ export default function LoadCard({ load, currentUser, isPending }: { load: any, 
 
       {/* REQUEST MODAL */}
       {isRequestModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
-          <div className="glass-panel border border-white/10 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-up bg-zinc-950">
-            <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/5">
-              <h3 className="font-bold text-white tracking-tight text-xl flex items-center gap-2">
-                <Navigation className="text-brand-400" /> Request Load
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white border border-gray-100 rounded-[2rem] w-full max-w-md shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden animate-fade-in-up">
+            
+            {/* Header */}
+            <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-white">
+              <h3 className="font-black text-gray-900 tracking-tight text-xl flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-brand-50 flex items-center justify-center text-brand-600">
+                  <Navigation size={16} className="rotate-45 ml-0.5" />
+                </div>
+                Request Load
               </h3>
-              <button onClick={() => setRequestModalOpen(false)} className="text-zinc-500 hover:text-white transition-colors">✕</button>
+              <button 
+                onClick={() => setRequestModalOpen(false)} 
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                ✕
+              </button>
             </div>
             
-            <form onSubmit={handleRequestSubmit} className="p-6 space-y-6">
-              <div className="text-center">
-                <div className="text-3xl font-black text-white">${load.price.toFixed(2)}</div>
-                <div className="text-sm text-zinc-400 mt-1">{load.distance} mi • {load.originCity} &rarr; {load.destCity}</div>
+            <form onSubmit={handleRequestSubmit} className="p-8">
+              {/* Load Info */}
+              <div className="text-center mb-8">
+                <div className="inline-block px-4 py-1.5 bg-green-50 text-green-700 text-xs font-black tracking-widest uppercase rounded-full mb-3">
+                  Target Price
+                </div>
+                <div className="text-5xl font-black text-gray-900 tracking-tighter mb-2">
+                  ${load.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+                <div className="text-sm font-medium text-gray-500 flex items-center justify-center gap-2">
+                  <span>{load.distance.toLocaleString()} mi</span>
+                  <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                  <span>{load.originCity} &rarr; {load.destCity}</span>
+                </div>
               </div>
 
-              <div className="bg-brand-500/10 border border-brand-500/30 rounded-2xl p-5">
-                <label className="block text-xs font-bold text-brand-400 uppercase tracking-wider mb-3">Your Bid Price ($)</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-400 font-bold text-xl">$</span>
+              {/* Input Area */}
+              <div className="mb-8">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 pl-1">
+                  Your Bid Price
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-5 pointer-events-none">
+                    <DollarSign size={20} className="text-brand-500 font-black" />
+                  </div>
                   <input 
                     type="number" 
                     step="0.01" 
                     required 
                     value={bidPrice}
                     onChange={e => setBidPrice(e.target.value)}
-                    className="w-full bg-zinc-900 border border-brand-500/50 focus:border-brand-400 rounded-xl py-4 pl-10 pr-4 text-2xl font-black text-white outline-none transition-colors shadow-inner"
+                    className="w-full bg-gray-50 border-2 border-gray-100 hover:border-gray-200 focus:bg-white focus:border-brand-500 rounded-2xl py-4 pl-12 pr-6 text-3xl font-black text-gray-900 outline-none transition-all focus:ring-4 focus:ring-brand-500/10 shadow-inner"
+                    placeholder="0.00"
                   />
                 </div>
+                <p className="text-xs text-gray-400 font-medium mt-3 text-center">
+                  Bidding lower than target increases your chances of winning.
+                </p>
               </div>
 
+              {/* Action Button */}
               <button 
                 type="submit" 
                 disabled={isLoading}
-                className="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-50 text-sm shadow-[0_0_15px_rgba(37,99,235,0.4)]"
+                className="relative w-full bg-gray-900 hover:bg-black text-white font-bold text-lg py-4 rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed group overflow-hidden shadow-xl shadow-gray-900/20"
               >
-                {isLoading ? 'Submitting...' : 'Submit Request & Bid'}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                <span className="relative flex items-center justify-center gap-2">
+                  {isLoading ? 'Submitting...' : 'Submit Request & Bid'}
+                </span>
               </button>
             </form>
           </div>
