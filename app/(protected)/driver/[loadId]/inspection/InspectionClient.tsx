@@ -50,14 +50,21 @@ export default function InspectionClient({ loadId, type, origin, dest, initialVi
   };
 
   const handleVehiclePhotoUpload = async (part: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const base64 = await compressImage(file, 800);
-      setVehiclePhotos(prev => {
-        // Replace se já existir, senão adiciona
-        const existing = prev.filter(p => p.part !== part);
-        return [...existing, { part, base64 }];
-      });
+    try {
+      const file = e.target.files?.[0];
+      if (file) {
+        const base64 = await compressImage(file, 800);
+        setVehiclePhotos(prev => {
+          // Replace se já existir, senão adiciona
+          const existing = prev.filter(p => p.part !== part);
+          return [...existing, { part, base64 }];
+        });
+      }
+    } catch (err) {
+      console.error('Error uploading photo:', err);
+      alert('Error processing photo. Please try again.');
+    } finally {
+      e.target.value = '';
     }
   };
 
@@ -201,15 +208,13 @@ export default function InspectionClient({ loadId, type, origin, dest, initialVi
             <label className="block text-xs uppercase text-gray-500 font-bold tracking-wider">Required Photos</label>
             <div className="grid grid-cols-2 gap-3">
               {CAR_PARTS.map(part => (
-                <label key={part} className={`cursor-pointer w-full py-3 px-2 rounded-xl border flex flex-col items-center justify-center gap-1 text-xs font-bold transition-colors ${hasPhoto(part) ? 'border-green-500 bg-green-50 text-green-600' : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100'}`}>
+                <label key={part} htmlFor={`photo-input-${part.replace(/\s+/g, '-')}`} className={`cursor-pointer w-full py-3 px-2 rounded-xl border flex flex-col items-center justify-center gap-1 text-xs font-bold transition-colors ${hasPhoto(part) ? 'border-green-500 bg-green-50 text-green-600' : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100'}`}>
                   <input 
+                    id={`photo-input-${part.replace(/\s+/g, '-')}`}
                     type="file" 
                     accept="image/*"
                     capture="environment"
-                    onChange={(e) => {
-                      handleVehiclePhotoUpload(part, e);
-                      e.target.value = '';
-                    }}
+                    onChange={(e) => handleVehiclePhotoUpload(part, e)}
                     className="hidden"
                   />
                   {hasPhoto(part) ? <CheckCircle2 size={16} /> : <Camera size={16} />}
