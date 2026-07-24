@@ -161,19 +161,17 @@ export default function InspectionClient({ loadId, type, origin, dest, initialVi
               className="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 text-center font-mono text-lg text-gray-900 focus:outline-none focus:border-brand-500 transition-colors placeholder:text-gray-400 mb-4"
             />
 
-            <div className="relative">
+            <label className={`cursor-pointer w-full py-3 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 font-bold transition-colors ${vinPhoto ? 'border-green-500 text-green-500 bg-green-50' : 'border-gray-300 text-gray-500 hover:bg-gray-50'}`}>
               <input 
                 type="file" 
                 accept="image/*"
                 capture="environment"
                 onChange={handleVinPhotoUpload}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                className="hidden"
               />
-              <div className={`w-full py-3 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 font-bold transition-colors ${vinPhoto ? 'border-green-500 text-green-500 bg-green-50' : 'border-gray-300 text-gray-500 hover:bg-gray-50'}`}>
-                {vinPhoto ? <CheckCircle2 size={18} /> : <Camera size={18} />}
-                {vinPhoto ? 'VIN Photo Captured' : 'Take VIN Photo'}
-              </div>
-            </div>
+              {vinPhoto ? <CheckCircle2 size={18} /> : <Camera size={18} />}
+              {vinPhoto ? 'VIN Photo Captured' : 'Take VIN Photo'}
+            </label>
           </div>
 
           <button 
@@ -203,19 +201,20 @@ export default function InspectionClient({ loadId, type, origin, dest, initialVi
             <label className="block text-xs uppercase text-gray-500 font-bold tracking-wider">Required Photos</label>
             <div className="grid grid-cols-2 gap-3">
               {CAR_PARTS.map(part => (
-                <div key={part} className="relative">
+                <label key={part} className={`cursor-pointer w-full py-3 px-2 rounded-xl border flex flex-col items-center justify-center gap-1 text-xs font-bold transition-colors ${hasPhoto(part) ? 'border-green-500 bg-green-50 text-green-600' : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100'}`}>
                   <input 
                     type="file" 
                     accept="image/*"
                     capture="environment"
-                    onChange={(e) => handleVehiclePhotoUpload(part, e)}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    onChange={(e) => {
+                      handleVehiclePhotoUpload(part, e);
+                      e.target.value = '';
+                    }}
+                    className="hidden"
                   />
-                  <div className={`w-full py-3 px-2 rounded-xl border flex flex-col items-center justify-center gap-1 text-xs font-bold transition-colors ${hasPhoto(part) ? 'border-green-500 bg-green-50 text-green-600' : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100'}`}>
-                    {hasPhoto(part) ? <CheckCircle2 size={16} /> : <Camera size={16} />}
-                    {part}
-                  </div>
-                </div>
+                  {hasPhoto(part) ? <CheckCircle2 size={16} /> : <Camera size={16} />}
+                  {part}
+                </label>
               ))}
             </div>
           </div>
