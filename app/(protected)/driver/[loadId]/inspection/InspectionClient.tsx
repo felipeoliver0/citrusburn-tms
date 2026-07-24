@@ -69,10 +69,6 @@ export default function InspectionClient({ loadId, type, origin, dest, initialVi
       return;
     }
 
-    if (type === 'delivery' && !podFileBase64) {
-      alert('Please upload the signed Proof of Delivery (POD) document.');
-      return;
-    }
     
     setIsSubmitting(true);
     try {
@@ -275,27 +271,6 @@ export default function InspectionClient({ loadId, type, origin, dest, initialVi
               Clear Signature
             </button>
           </div>
-
-          {type === 'delivery' && (
-            <div className="space-y-3 pt-4 border-t border-gray-100">
-              <h3 className="font-bold text-sm text-brand-500">Proof of Delivery (POD)</h3>
-              <p className="text-xs text-gray-500">Please capture a photo of the signed document to process payment.</p>
-              
-              <div className="relative">
-                <input 
-                  type="file" 
-                  accept="image/*,application/pdf"
-                  capture="environment"
-                  onChange={handlePodUpload}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                />
-                <div className={`w-full py-4 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 font-bold transition-colors ${podFileBase64 ? 'border-brand-500 text-brand-500 bg-brand-50' : 'border-gray-300 text-gray-500 hover:bg-gray-50'}`}>
-                  {podFileBase64 ? <CheckCircle2 size={18} /> : <Camera size={18} />}
-                  {podFileBase64 ? 'Document Attached' : 'Capture POD Document'}
-                </div>
-              </div>
-            </div>
-          )}
 
           <div className="flex gap-4 pt-4 border-t border-gray-100">
             <button onClick={handlePrev} className="py-4 px-6 rounded-xl font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors">
