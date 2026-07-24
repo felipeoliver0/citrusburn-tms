@@ -9,6 +9,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test?schema=public"
+      DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/test?schema=public"
+      JWT_SECRET: "test_secret_for_ci_build"
 
     steps:
     - uses: actions/checkout@v4
@@ -33,8 +37,3 @@ jobs:
       
     - name: Build Project
       run: npm run build
-      env:
-        # Mock env vars for build if needed
-        DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test?schema=public"
-        DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/test?schema=public"
-        JWT_SECRET: "test_secret_for_ci_build"
