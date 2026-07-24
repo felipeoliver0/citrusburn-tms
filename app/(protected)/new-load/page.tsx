@@ -75,12 +75,12 @@ export default function NovaCarga() {
     }
   }
 
-  // Common Input Style for dark theme
-  const inputStyle = "w-full bg-gray-800/50 border border-gray-700 rounded-xl p-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all shadow-inner";
-  const labelStyle = "flex items-center gap-2 text-[11px] uppercase text-gray-400 font-bold mb-1.5 tracking-wider";
+  // Common Input Style
+  const inputStyle = "w-full bg-white border border-zinc-200 rounded-xl p-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all shadow-sm";
+  const labelStyle = "flex items-center gap-2 text-[11px] uppercase text-zinc-500 font-bold mb-1.5 tracking-wider";
 
   return (
-    <div className="w-full min-h-[calc(100vh-4rem)] p-4 md:p-8 bg-gray-950 relative overflow-hidden">
+    <div className="w-full min-h-[calc(100vh-4rem)] p-4 md:p-8 bg-zinc-50 relative overflow-hidden">
       
       {/* Decorative Background Elements */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-brand-500/20 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
@@ -90,10 +90,10 @@ export default function NovaCarga() {
         
         {/* Header Section */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
             Post a New Load
           </h1>
-          <p className="text-sm text-gray-400 mt-2 max-w-xl">
+          <p className="text-sm text-zinc-500 mt-2 max-w-xl">
             Create a highly visible listing on the loadboard. Fill in the specifics to match with the best carriers in our network.
           </p>
         </div>
@@ -101,18 +101,18 @@ export default function NovaCarga() {
         <form onSubmit={handleSubmit} className="space-y-6">
 
           {/* Section 1: Route & Dates */}
-          <div className="bg-gray-900/60 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-2xl">
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/5">
-              <div className="bg-brand-500/20 p-2 rounded-lg">
-                <Navigation className="w-5 h-5 text-brand-400" />
+          <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-zinc-100">
+              <div className="bg-brand-50 p-2 rounded-lg">
+                <Navigation className="w-5 h-5 text-brand-500" />
               </div>
-              <h2 className="text-lg font-bold text-gray-100">Route & Schedule</h2>
+              <h2 className="text-lg font-bold text-gray-900">Route & Schedule</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
               {/* Origin */}
-              <div className="space-y-4 bg-gray-800/30 p-4 rounded-xl border border-white/5">
+              <div className="space-y-4 bg-zinc-50 p-4 rounded-xl border border-zinc-200">
                 <div>
                   <label className={labelStyle}><MapPin className="w-3 h-3 text-emerald-400" /> Origin Address (Hidden)</label>
                   <input type="text" name="originAddress" required className={inputStyle} placeholder="123 Main St, Suite 100" />
@@ -129,12 +129,12 @@ export default function NovaCarga() {
                 </div>
                 <div>
                   <label className={labelStyle}><Calendar className="w-3 h-3" /> Pickup Date</label>
-                  <input type="date" name="pickupDate" required className={`${inputStyle} [color-scheme:dark]`} />
+                  <input type="date" name="pickupDate" required className={inputStyle} />
                 </div>
               </div>
 
               {/* Destination */}
-              <div className="space-y-4 bg-gray-800/30 p-4 rounded-xl border border-white/5">
+              <div className="space-y-4 bg-zinc-50 p-4 rounded-xl border border-zinc-200">
                 <div>
                   <label className={labelStyle}><MapPin className="w-3 h-3 text-rose-400" /> Destination Address (Hidden)</label>
                   <input type="text" name="destAddress" required className={inputStyle} placeholder="456 Delivery Ave" />
@@ -151,7 +151,7 @@ export default function NovaCarga() {
                 </div>
                 <div>
                   <label className={labelStyle}><Calendar className="w-3 h-3" /> Delivery Date</label>
-                  <input type="date" name="deliveryDate" required className={`${inputStyle} [color-scheme:dark]`} />
+                  <input type="date" name="deliveryDate" required className={inputStyle} />
                 </div>
               </div>
 
@@ -176,13 +176,13 @@ export default function NovaCarga() {
           </div>
 
           {/* Section 2: Vehicles Inventory */}
-          <div className="bg-gray-900/60 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-2xl">
-            <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/5">
+          <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-zinc-100">
               <div className="flex items-center gap-3">
-                <div className="bg-blue-500/20 p-2 rounded-lg">
-                  <Car className="w-5 h-5 text-blue-400" />
+                <div className="bg-blue-50 p-2 rounded-lg">
+                  <Car className="w-5 h-5 text-blue-500" />
                 </div>
-                <h2 className="text-lg font-bold text-gray-100">Vehicles Inventory</h2>
+                <h2 className="text-lg font-bold text-gray-900">Vehicles Inventory</h2>
               </div>
               <button 
                 type="button" 
@@ -195,7 +195,7 @@ export default function NovaCarga() {
             
             <div className="space-y-4">
               {vehicles.map((v, i) => (
-                <div key={v.id} className="group flex flex-col md:flex-row items-center gap-4 bg-gray-800/30 border border-gray-700/50 hover:border-gray-600 rounded-xl p-4 transition-all">
+                <div key={v.id} className="group flex flex-col md:flex-row items-center gap-4 bg-zinc-50 border border-zinc-200 hover:border-brand-300 rounded-xl p-4 transition-all">
                   <div className="w-full md:w-auto flex-1">
                     <input 
                       type="text" 
@@ -243,14 +243,14 @@ export default function NovaCarga() {
           </div>
 
           {/* Section 3: Trailer & Payment */}
-          <div className="bg-gray-900/60 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-2xl">
+          <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="bg-indigo-500/20 p-2 rounded-lg">
-                    <Truck className="w-5 h-5 text-indigo-400" />
+                  <div className="bg-indigo-50 p-2 rounded-lg">
+                    <Truck className="w-5 h-5 text-indigo-500" />
                   </div>
-                  <h2 className="text-lg font-bold text-gray-100">Trailer Requirements</h2>
+                  <h2 className="text-lg font-bold text-gray-900">Trailer Requirements</h2>
                 </div>
                 <select name="trailerType" className={`${inputStyle} appearance-none`}>
                   <option value="OPEN">Open Trailer</option>
@@ -260,10 +260,10 @@ export default function NovaCarga() {
               
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="bg-amber-500/20 p-2 rounded-lg">
-                    <Banknote className="w-5 h-5 text-amber-400" />
+                  <div className="bg-amber-50 p-2 rounded-lg">
+                    <Banknote className="w-5 h-5 text-amber-500" />
                   </div>
-                  <h2 className="text-lg font-bold text-gray-100">Payment Terms</h2>
+                  <h2 className="text-lg font-bold text-gray-900">Payment Terms</h2>
                 </div>
                 <select name="paymentType" className={`${inputStyle} appearance-none text-amber-400 font-bold`}>
                   <option value="COD">COD (Cash on Delivery)</option>
@@ -281,7 +281,7 @@ export default function NovaCarga() {
             <button 
               type="button" 
               onClick={() => router.back()}
-              className="w-full md:w-auto px-6 py-3 text-gray-400 font-bold hover:text-white hover:bg-gray-800 rounded-xl transition-all"
+              className="w-full md:w-auto px-6 py-3 text-zinc-500 font-bold hover:text-gray-900 hover:bg-zinc-100 rounded-xl transition-all"
             >
               Cancel
             </button>
