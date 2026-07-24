@@ -1,11 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 export default function DownloadContractButton({ load, currentUser }: { load: any, currentUser: any }) {
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const generatePDF = () => {
+  const generatePDF = async () => {
+    setIsGenerating(true);
     const doc = new jsPDF();
     const isBroker = currentUser.role === 'BROKER';
     
@@ -119,7 +122,22 @@ export default function DownloadContractButton({ load, currentUser }: { load: an
     doc.line(110, finalY + 45, 196, finalY + 45); // Carrier line
 
     if (load.driverSignature) {
-      doc.addImage(load.driverSignature, 'PNG', 120, finalY + 25, 50, 20);
+      try {
+        const response = await fetch(load.driverSignature);
+        const blob = await response.blob();
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        doc.addImage(base64, 'PNG', 120, finalY + 25, 50, 20);
+      } catch (e) {
+        console.error('Failed to load signature image', e);
+        doc.setFontSize(8);
+        doc.setTextColor(255, 0, 0);
+        doc.text('[Signature Image Unavailable]', 120, finalY + 35);
+      }
     }
     
     doc.setFontSize(10);
@@ -129,14 +147,16 @@ export default function DownloadContractButton({ load, currentUser }: { load: an
 
     // Save PDF
     doc.save(`Rate_Confirmation_${load.id.split('-')[0]}.pdf`);
+    setIsGenerating(false);
   };
 
   return (
     <button 
       onClick={generatePDF}
-      className="bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 font-bold px-4 py-2 rounded text-xs transition-colors flex items-center gap-1.5 shadow-sm"
+      disabled={isGenerating}
+      className="bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 font-bold px-4 py-2 rounded text-xs transition-colors flex items-center gap-1.5 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      <span>📄</span> Download Contract
+      <span>📄</span> {isGenerating ? 'Generating...' : 'Download Contract'}
     </button>
   );
 }
