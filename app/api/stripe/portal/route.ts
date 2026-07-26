@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
-import { verifySession } from '@/lib/dal';
+import { getSession } from '@/lib/dal';
 import { getStripe } from '@/lib/stripe';
 import prisma from '@/lib/prisma';
 
 export async function POST() {
   try {
-    const { userId, role } = await verifySession();
+    const sessionData = await getSession();
+    if (!sessionData || !sessionData.userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const { userId, role } = sessionData;
     if (role !== 'CARRIER') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
