@@ -9,7 +9,7 @@ export default async function TrackingPage({
 }: { 
   params: Promise<{ loadId: string }> 
 }) {
-  const { userId } = await verifySession();
+  const { userId, role } = await verifySession();
 
   const resolvedParams = await params;
   const loadId = resolvedParams.loadId;
@@ -19,7 +19,39 @@ export default async function TrackingPage({
     include: { driver: true, carrier: true }
   });
 
-  if (!load || !load.currentLat || !load.currentLng) {
+  if (!load) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center text-center p-6">
+        <div className="text-6xl mb-4">🔍</div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Load Not Found</h1>
+        <p className="text-gray-500 mb-6 max-w-md">This load does not exist or has been removed.</p>
+        <Link href="/my-loads" className="bg-brand-600 text-gray-900 font-bold py-3 px-6 rounded-lg uppercase text-xs tracking-wider">
+          Back to Dispatches
+        </Link>
+      </div>
+    );
+  }
+
+  const isAuthorized =
+    role === 'ADMIN' ||
+    load.brokerId === userId ||
+    load.carrierId === userId ||
+    load.driverId === userId;
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center text-center p-6">
+        <div className="text-6xl mb-4">⛔</div>
+        <h1 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h1>
+        <p className="text-gray-500 mb-6 max-w-md">You do not have permission to view the tracking details for this load.</p>
+        <Link href="/my-loads" className="bg-brand-600 text-gray-900 font-bold py-3 px-6 rounded-lg uppercase text-xs tracking-wider">
+          Back to Dispatches
+        </Link>
+      </div>
+    );
+  }
+
+  if (!load.currentLat || !load.currentLng) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center text-center p-6">
         <div className="text-6xl mb-4">🛰️</div>
