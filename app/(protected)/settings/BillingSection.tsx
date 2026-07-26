@@ -40,6 +40,21 @@ export default function BillingSection({
     }
   }
 
+  async function handleManageBilling() {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/stripe/portal', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to open billing portal');
+      if (data.url) window.location.href = data.url;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="glass-panel border border-gray-100 rounded-2xl shadow-xl overflow-hidden p-6 bg-white">
       <h3 className="text-xs font-semibold text-brand-500 uppercase tracking-wider mb-6 border-b border-gray-100 pb-2 flex items-center gap-2">
@@ -76,6 +91,17 @@ export default function BillingSection({
           >
             {loading ? <Loader2 size={18} className="animate-spin" /> : <CreditCard size={18} />}
             Subscribe Now
+          </button>
+        )}
+
+        {(subscriptionStatus === 'ACTIVE' || subscriptionStatus === 'PAST_DUE') && billingConfigured && (
+          <button
+            onClick={handleManageBilling}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold py-3 px-6 rounded-xl transition-colors disabled:opacity-50 mt-2"
+          >
+            {loading ? <Loader2 size={18} className="animate-spin" /> : <CreditCard size={18} />}
+            Manage Billing & Cancel Subscription
           </button>
         )}
 

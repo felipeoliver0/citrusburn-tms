@@ -1,6 +1,7 @@
 import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { verifySession } from '@/lib/dal';
 import MapWrapper from './MapWrapper';
 
@@ -136,13 +137,13 @@ export default async function TrackingPage({
                 <div className="grid grid-cols-2 gap-3">
                   {load.pickupVinPhoto && (
                     <div className="border border-gray-200 rounded-lg overflow-hidden group relative">
-                      <img src={load.pickupVinPhoto} alt="Pickup VIN" className="w-full h-32 object-cover group-hover:scale-105 transition-transform" />
+                      <Image src={load.pickupVinPhoto} alt="Pickup VIN" width={400} height={300} className="w-full h-32 object-cover group-hover:scale-105 transition-transform" />
                       <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] font-bold uppercase tracking-wider p-1 text-center backdrop-blur-sm">VIN Photo</div>
                     </div>
                   )}
                   {Array.isArray(load.pickupPhotos) && load.pickupPhotos.map((photo: any, idx: number) => (
                     <div key={idx} className="border border-gray-200 rounded-lg overflow-hidden group relative">
-                      <img src={photo.base64} alt={photo.part} className="w-full h-32 object-cover group-hover:scale-105 transition-transform" />
+                      <Image src={photo.base64} alt={photo.part} width={400} height={300} className="w-full h-32 object-cover group-hover:scale-105 transition-transform" />
                       <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] font-bold uppercase tracking-wider p-1 text-center backdrop-blur-sm">{photo.part}</div>
                     </div>
                   ))}
@@ -163,13 +164,13 @@ export default async function TrackingPage({
                 <div className="grid grid-cols-2 gap-3">
                   {load.deliveryVinPhoto && (
                     <div className="border border-gray-200 rounded-lg overflow-hidden group relative">
-                      <img src={load.deliveryVinPhoto} alt="Delivery VIN" className="w-full h-32 object-cover group-hover:scale-105 transition-transform" />
+                      <Image src={load.deliveryVinPhoto} alt="Delivery VIN" width={400} height={300} className="w-full h-32 object-cover group-hover:scale-105 transition-transform" />
                       <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] font-bold uppercase tracking-wider p-1 text-center backdrop-blur-sm">VIN Photo</div>
                     </div>
                   )}
                   {Array.isArray(load.deliveryPhotos) && load.deliveryPhotos.map((photo: any, idx: number) => (
                     <div key={idx} className="border border-gray-200 rounded-lg overflow-hidden group relative">
-                      <img src={photo.base64} alt={photo.part} className="w-full h-32 object-cover group-hover:scale-105 transition-transform" />
+                      <Image src={photo.base64} alt={photo.part} width={400} height={300} className="w-full h-32 object-cover group-hover:scale-105 transition-transform" />
                       <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] font-bold uppercase tracking-wider p-1 text-center backdrop-blur-sm">{photo.part}</div>
                     </div>
                   ))}

@@ -123,15 +123,15 @@ export async function processRegistration(data: RegisterFormData): Promise<{ suc
     if (process.env.RESEND_API_KEY) {
       const resend = new Resend(process.env.RESEND_API_KEY);
       await resend.emails.send({
-        from: 'AxleGrid TMS <onboarding@resend.dev>',
+        from: 'America Dispatch TMS <onboarding@resend.dev>',
         to: validData.email,
-        subject: 'Verify your email - AxleGrid TMS',
+        subject: 'Verify your email - America Dispatch TMS',
         html: `
           <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-w: 600px; margin: 0 auto; background-color: #f8fafc; padding: 40px 20px;">
             <div style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
               <div style="background-color: #09090b; padding: 30px; text-align: center;">
                 <div style="display: inline-block; width: 48px; height: 48px; background-color: #2563eb; color: #ffffff; border-radius: 12px; font-size: 24px; font-weight: bold; line-height: 48px; margin-bottom: 12px;">H</div>
-                <h1 style="color: #ffffff; font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -0.5px;">AxleGrid TMS</h1>
+                <h1 style="color: #ffffff; font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -0.5px;">America Dispatch TMS</h1>
               </div>
               <div style="padding: 40px 30px;">
                 <h2 style="color: #0f172a; font-size: 20px; margin-top: 0; margin-bottom: 16px; font-weight: 700;">Welcome, ${fullName}!</h2>

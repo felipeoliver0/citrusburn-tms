@@ -38,6 +38,19 @@ export default async function ReviewPage({
   const isBroker = load.brokerId === userId;
   const isCarrier = load.carrierId === userId;
 
+  if (!isBroker && !isCarrier) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center text-center p-6">
+        <div className="text-6xl mb-4">⛔</div>
+        <h1 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h1>
+        <p className="text-gray-500 mb-6 max-w-md">You do not have permission to view or review this load.</p>
+        <Link href="/my-loads" className="bg-brand-600 text-gray-900 font-bold py-3 px-6 rounded-lg uppercase text-xs tracking-wider">
+          Back to Dispatches
+        </Link>
+      </div>
+    );
+  }
+
   // Broker reviews the Carrier. Carrier reviews the Broker.
   const targetUser = isBroker ? load.carrier : load.broker;
   const targetRole = isBroker ? 'Carrier' : 'Broker';

@@ -17,6 +17,11 @@ export async function uploadBase64ToBlob(base64Data: string, filename: string): 
 
   const type = matches[1];
   const buffer = Buffer.from(matches[2], 'base64');
+  
+  if (buffer.length > 8 * 1024 * 1024) {
+    throw new Error('Image too large. Maximum size is 8MB.');
+  }
+
   const ext = type.split('/')[1] || 'png';
   const name = `${filename}-${Date.now()}.${ext}`;
 

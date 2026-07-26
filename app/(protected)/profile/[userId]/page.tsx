@@ -2,10 +2,12 @@ import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { MapPin, Truck, ShieldCheck, Mail, Phone, CalendarDays } from 'lucide-react';
+import { verifySession } from '@/lib/dal';
 
 export default async function PublicProfile({ params }: { params: Promise<{ userId: string }> }) {
   const resolvedParams = await params;
   const userId = resolvedParams.userId;
+  const { userId: currentUserId } = await verifySession();
 
   const profileUser = await prisma.user.findUnique({
     where: { id: userId },
@@ -39,6 +41,22 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
   const averageRating = totalReviews > 0 
     ? (profileUser.reviewsReceived.reduce((acc, rev) => acc + rev.rating, 0) / totalReviews).toFixed(1)
     : 'N/A';
+
+  let hasCommonLoad = false;
+  if (currentUserId === userId) {
+    hasCommonLoad = true;
+  } else {
+    const load = await prisma.load.findFirst({
+      where: {
+        OR: [
+          { brokerId: currentUserId, carrierId: userId },
+          { brokerId: userId, carrierId: currentUserId }
+        ]
+      }
+    });
+    hasCommonLoad = !!load;
+  }
+  const showSensitive = hasCommonLoad;
 
   return (
     <div className="w-full">
@@ -76,23 +94,25 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
               {profileUser.companyName && <p className="text-gray-500 font-medium">Rep: {profileUser.fullName}</p>}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400"><Mail size={14}/></div>
-                  {profileUser.email}
-                </div>
-                {profileUser.phone && (
+                {showSensitive && (
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400"><Mail size={14}/></div>
+                    {profileUser.email}
+                  </div>
+                )}
+                {showSensitive && profileUser.phone && (
                   <div className="flex items-center gap-3 text-sm text-gray-600">
                     <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400"><Phone size={14}/></div>
                     {profileUser.phone}
                   </div>
                 )}
-                {profileUser.companyAddress && (
+                {(profileUser.companyCity || profileUser.companyState || profileUser.companyAddress) && (
                   <div className="flex items-center gap-3 text-sm text-gray-600">
                     <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400"><MapPin size={14}/></div>
-                    {profileUser.companyAddress}
-                    {profileUser.companyCity && `, ${profileUser.companyCity}`}
+                    {showSensitive && profileUser.companyAddress && `${profileUser.companyAddress}, `}
+                    {profileUser.companyCity && `${profileUser.companyCity}`}
                     {profileUser.companyState && `, ${profileUser.companyState}`}
-                    {profileUser.companyZip && ` ${profileUser.companyZip}`}
+                    {showSensitive && profileUser.companyZip && ` ${profileUser.companyZip}`}
                   </div>
                 )}
                 {profileUser.websiteUrl && (
