@@ -274,6 +274,22 @@ export default function NovaCarga() {
                 </select>
               </div>
             </div>
+            
+            <div className="mt-8 pt-6 border-t border-zinc-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <input 
+                  type="checkbox" 
+                  id="postToCD" 
+                  name="postToCD" 
+                  value="true"
+                  className="w-5 h-5 text-brand-600 rounded border-gray-300 focus:ring-brand-500" 
+                />
+                <label htmlFor="postToCD" className="text-sm font-bold text-gray-700 cursor-pointer">
+                  Cross-post to Central Dispatch
+                </label>
+              </div>
+              <span className="text-xs text-zinc-400 font-medium">Reaches 10k+ carriers</span>
+            </div>
           </div>
 
           {/* Footer Actions */}

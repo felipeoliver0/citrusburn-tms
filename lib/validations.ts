@@ -73,6 +73,7 @@ export const CreateLoadSchema = z.object({
   vehiclesList: z.array(VehicleSchema).max(20).default([]),
   pickupDate: z.string().min(1, 'Pickup date is required'),
   deliveryDate: z.string().min(1, 'Delivery date is required'),
+  postToCD: z.boolean().optional().default(false),
 });
 
 export const UpdateLoadSchema = z.object({

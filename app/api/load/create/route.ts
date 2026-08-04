@@ -5,6 +5,7 @@ import { CreateLoadSchema } from '@/lib/validations';
 import { revalidatePath } from 'next/cache';
 import { isRateLimited } from '@/lib/rateLimit';
 import { logAudit } from '@/lib/audit';
+import { postLoadToCentralDispatch } from '@/lib/centralDispatch';
 
 export async function POST(req: Request) {
   try {
@@ -48,6 +49,7 @@ export async function POST(req: Request) {
       distance,
       trailerType,
       paymentType,
+      postToCD,
     } = parsed.data;
 
     const newLoad = await prisma.load.create({
@@ -69,6 +71,15 @@ export async function POST(req: Request) {
         paymentType,
       }
     });
+
+    if (postToCD) {
+      await postLoadToCentralDispatch({
+        originCity,
+        destCity,
+        price,
+        vehiclesData: vehiclesList,
+      });
+    }
 
     revalidatePath('/loadboard');
 

@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Truck, Map, Settings, LogOut, User, ShieldCheck, Users, Package } from 'lucide-react';
+import { LayoutDashboard, Truck, Map, Settings, LogOut, User, ShieldCheck, Users, Package, Kanban } from 'lucide-react';
 import { useState, ReactNode } from 'react';
 
 export default function Sidebar({ userRole }: { userRole: string }) {
@@ -56,6 +56,10 @@ export default function Sidebar({ userRole }: { userRole: string }) {
       <nav className="flex-1 px-4 py-6 space-y-2">
         {userRole !== 'DRIVER' && (
           <NavItem href="/dashboard" icon={<LayoutDashboard size={20} />} label="Dashboard" pathname={pathname} isCollapsed={isCollapsed} />
+        )}
+
+        {(userRole === 'BROKER' || userRole === 'ADMIN') && (
+          <NavItem href="/board" icon={<Kanban size={20} />} label="Kanban Board" pathname={pathname} isCollapsed={isCollapsed} />
         )}
         
         {userRole === 'BROKER' && (
