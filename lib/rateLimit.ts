@@ -31,12 +31,19 @@ export async function isRateLimited(key: string, maxRequests: number): Promise<b
       }
       return count > maxRequests;
     } catch (error) {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('CRITICAL: Redis rate limiting failed in production.', error);
+        // Fail-closed in production to prevent bypass
+        return true; 
+      }
       console.warn('Redis rate limiting failed, falling back to memory map', error);
       // Fall through to memory logic
     }
+  } else if (process.env.NODE_ENV === 'production') {
+    throw new Error('CRITICAL: Redis must be configured in production for rate limiting. In-memory fallback is unsafe in serverless.');
   }
 
-  // Fallback memory logic
+  // Fallback memory logic (development only)
   const now = Date.now();
   const entry = fallbackStore.get(key);
 
