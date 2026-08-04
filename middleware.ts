@@ -6,7 +6,7 @@ import { getRoleRedirect } from './lib/rbac';
 // Routes that are explicitly public (no auth required)
 const publicPaths = ['/', '/login', '/register', '/verify', '/terms', '/privacy', '/logout'];
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // --- Global Security: CSP and Headers ---
