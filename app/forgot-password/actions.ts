@@ -48,9 +48,9 @@ export async function handleForgotPassword(formData: FormData) {
   if (process.env.RESEND_API_KEY) {
     const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
-      from: 'AxleGrid TMS <onboarding@resend.dev>',
+      from: 'AxleGrid <noreply@axlegrid.com>',
       to: user.email,
-      subject: 'Password Reset Request - AxleGrid TMS',
+      subject: 'Password Reset Request - AxleGrid',
       html: `
         <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-w: 600px; margin: 0 auto; background-color: #f8fafc; padding: 40px 20px;">
           <div style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
