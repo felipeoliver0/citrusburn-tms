@@ -7,46 +7,39 @@ import TopRoutesChart from './TopRoutesChart';
 import OnboardingChecklist from './OnboardingChecklist';
 
 export default async function BrokerDashboard({ userId }: { userId: string }) {
-  const activeLoads = await prisma.load.count({
-    where: { brokerId: userId, status: { notIn: ['DELIVERED', 'INVOICED'] } }
-  });
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
 
-  const deliveredLoads = await prisma.load.count({
-    where: { brokerId: userId, status: 'DELIVERED' }
-  });
-
-  const pendingRequests = await prisma.loadRequest.count({
-    where: { load: { brokerId: userId }, status: 'PENDING' }
-  });
-
-  const totalLoadsPosted = await prisma.load.count({
-    where: { brokerId: userId }
-  });
-
-  const loadsWithCarrier = await prisma.load.count({
-    where: { brokerId: userId, carrierId: { not: null } }
-  });
-
-  const profile = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { companyName: true, phone: true, companyAddress: true }
-  });
+  const [
+    activeLoads,
+    deliveredLoads,
+    pendingRequests,
+    totalLoadsPosted,
+    loadsWithCarrier,
+    profile,
+    recentLoads,
+    allDeliveredLoads,
+    statusGroup,
+    routesDataRaw,
+    recentPostedLoads
+  ] = await prisma.$transaction([
+    prisma.load.count({ where: { brokerId: userId, status: { notIn: ['DELIVERED', 'INVOICED'] } } }),
+    prisma.load.count({ where: { brokerId: userId, status: 'DELIVERED' } }),
+    prisma.loadRequest.count({ where: { load: { brokerId: userId }, status: 'PENDING' } }),
+    prisma.load.count({ where: { brokerId: userId } }),
+    prisma.load.count({ where: { brokerId: userId, carrierId: { not: null } } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { companyName: true, phone: true, companyAddress: true } }),
+    prisma.load.findMany({ where: { brokerId: userId }, orderBy: { createdAt: 'desc' }, take: 5, include: { carrier: { select: { companyName: true } } } }),
+    prisma.load.findMany({ where: { brokerId: userId, status: 'DELIVERED', distance: { gt: 0 } }, select: { price: true, distance: true } }),
+    prisma.load.groupBy({ by: ['status'], where: { brokerId: userId }, _count: { id: true } }),
+    prisma.load.findMany({ where: { brokerId: userId }, select: { originCity: true, destCity: true, price: true } }),
+    prisma.load.findMany({ where: { brokerId: userId, createdAt: { gte: sevenDaysAgo } }, select: { createdAt: true, price: true } })
+  ]);
 
   const profileComplete = !!(profile?.companyName && profile?.phone && profile?.companyAddress);
 
-  const recentLoads = await prisma.load.findMany({
-    where: { brokerId: userId },
-    orderBy: { createdAt: 'desc' },
-    take: 5,
-    include: { carrier: { select: { companyName: true } } }
-  });
-
   // Calculate Avg Price Per Mile
-  const allDeliveredLoads = await prisma.load.findMany({
-    where: { brokerId: userId, status: 'DELIVERED', distance: { gt: 0 } },
-    select: { price: true, distance: true }
-  });
-
   let avgPricePerMile = 0;
   if (allDeliveredLoads.length > 0) {
     const totalDistance = allDeliveredLoads.reduce((sum, load) => sum + load.distance, 0);
@@ -54,19 +47,7 @@ export default async function BrokerDashboard({ userId }: { userId: string }) {
     avgPricePerMile = totalDistance > 0 ? totalPrice / totalDistance : 0;
   }
 
-  // Load Status grouping
-  const statusGroup = await prisma.load.groupBy({
-    by: ['status'],
-    where: { brokerId: userId },
-    _count: { id: true }
-  });
   const statusData = statusGroup.map(g => ({ name: g.status, value: g._count.id }));
-
-  // Top Routes grouping
-  const routesDataRaw = await prisma.load.findMany({
-    where: { brokerId: userId },
-    select: { originCity: true, destCity: true, price: true }
-  });
 
   const routesMap = new Map<string, number>();
   for (const load of routesDataRaw) {
@@ -77,22 +58,6 @@ export default async function BrokerDashboard({ userId }: { userId: string }) {
     .map(([route, revenue]) => ({ route, revenue }))
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5);
-
-  // Real data for the last 7 days for Broker
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-  sevenDaysAgo.setHours(0, 0, 0, 0);
-
-  const recentPostedLoads = await prisma.load.findMany({
-    where: {
-      brokerId: userId,
-      createdAt: { gte: sevenDaysAgo }
-    },
-    select: {
-      createdAt: true,
-      price: true
-    }
-  });
 
   const chartData = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date();

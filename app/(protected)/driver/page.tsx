@@ -137,7 +137,7 @@ export default async function DriverDashboard() {
                     )}
                   </Link>
 
-                  {!isPickup && process.env.NODE_ENV === 'development' && (
+                  {!isPickup && process.env.NEXT_PUBLIC_ENABLE_GPS_SIMULATOR === 'true' && (
                     <GpsSimulator 
                       origin={`${load.originCity}, ${load.originZip}`} 
                       dest={`${load.destCity}, ${load.destZip}`} 

@@ -141,10 +141,7 @@ export default async function CarrierDashboard({ userId }: { userId: string }) {
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
           <h2 className="text-xl font-bold mb-6 text-gray-800">Quick Actions</h2>
           <div className="space-y-3">
-            <Link href="/new-load" className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-brand-50 to-blue-50 border border-brand-100 hover:from-brand-100 hover:to-blue-100 transition-all">
-              <Package className="text-brand-600" />
-              <span className="font-bold text-brand-900">Post a New Load</span>
-            </Link>
+
             <Link href="/loadboard" className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-all">
               <MapPin className="text-gray-600" />
               <span className="font-bold text-gray-700">Find New Loads</span>
