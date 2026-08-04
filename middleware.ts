@@ -13,6 +13,7 @@ export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.delete('x-user-id');
   requestHeaders.delete('x-user-role');
+  requestHeaders.delete('x-user-onboarding');
 
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const cspHeader = `
