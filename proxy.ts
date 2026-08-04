@@ -106,7 +106,7 @@ export async function proxy(request: NextRequest) {
         value: newToken,
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'strict',
         maxAge: 7200, // 2 hours in seconds
         path: '/'
       });
