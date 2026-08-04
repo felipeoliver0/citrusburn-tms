@@ -52,6 +52,13 @@ export async function submitInspectionAction(formData: FormData) {
   }
   const podBase64 = formData.get('podBase64') as string | null;
 
+  const load = await prisma.load.findUnique({ where: { id: loadId } });
+  if (!load) throw new Error('Load not found');
+
+  if (load.driverId !== userId && load.carrierId !== userId) {
+    throw new Error('Forbidden: You do not own this load');
+  }
+
   // Process uploads concurrently for speed
   const uploadedVinPhoto = vinPhoto ? await uploadBase64ToBlob(vinPhoto, `vin-${loadId}`) : '';
   const uploadedSignature = signature ? await uploadBase64ToBlob(signature, `sig-${loadId}`) : '';
@@ -69,13 +76,6 @@ export async function submitInspectionAction(formData: FormData) {
     if (vehiclePhotos[i].base64) {
       vehiclePhotos[i].base64 = await uploadBase64ToBlob(vehiclePhotos[i].base64, `vehicle-${loadId}-${i}`);
     }
-  }
-
-  const load = await prisma.load.findUnique({ where: { id: loadId } });
-  if (!load) throw new Error('Load not found');
-
-  if (load.driverId !== userId && load.carrierId !== userId) {
-    throw new Error('Forbidden: You do not own this load');
   }
 
   if (type === 'pickup') {
