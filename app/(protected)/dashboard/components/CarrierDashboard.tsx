@@ -7,60 +7,33 @@ import TopRoutesChart from './TopRoutesChart';
 
 export default async function CarrierDashboard({ userId }: { userId: string }) {
   // Fetch aggregate data for the carrier
-  const activeLoads = await prisma.load.count({
-    where: {
-      carrierId: userId,
-      status: { in: ['IN_TRANSIT', 'BOOKED'] }
-    }
-  });
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
 
-  const completedLoads = await prisma.load.count({
-    where: {
-      carrierId: userId,
-      status: 'DELIVERED'
-    }
-  });
-
-  const fleetSize = await prisma.user.count({
-    where: {
-      employerId: userId,
-      role: 'DRIVER'
-    }
-  });
+  const [
+    activeLoads,
+    completedLoads,
+    fleetSize,
+    revenueData,
+    recentLoads,
+    statusGroup,
+    routesDataRaw,
+    recentCompletedLoads
+  ] = await prisma.$transaction([
+    prisma.load.count({ where: { carrierId: userId, status: { in: ['IN_TRANSIT', 'BOOKED'] } } }),
+    prisma.load.count({ where: { carrierId: userId, status: 'DELIVERED' } }),
+    prisma.user.count({ where: { employerId: userId, role: 'DRIVER' } }),
+    prisma.load.aggregate({ where: { carrierId: userId, status: { in: ['DELIVERED', 'INVOICED'] } }, _sum: { price: true } }),
+    prisma.load.findMany({ where: { carrierId: userId }, orderBy: { createdAt: 'desc' }, take: 5, include: { broker: { select: { companyName: true } } } }),
+    prisma.load.groupBy({ by: ['status'], where: { carrierId: userId, status: { not: 'AVAILABLE' } }, _count: { id: true } }),
+    prisma.load.findMany({ where: { carrierId: userId, status: { in: ['DELIVERED', 'INVOICED'] } }, select: { originCity: true, destCity: true, price: true } }),
+    prisma.load.findMany({ where: { carrierId: userId, status: { in: ['DELIVERED', 'INVOICED'] }, createdAt: { gte: sevenDaysAgo } }, select: { createdAt: true, price: true } })
+  ]);
 
   const avgDriverLoads = fleetSize > 0 ? completedLoads / fleetSize : completedLoads;
 
-  // Calculate estimated revenue
-  const revenueData = await prisma.load.aggregate({
-    where: {
-      carrierId: userId,
-      status: { in: ['DELIVERED', 'INVOICED'] }
-    },
-    _sum: {
-      price: true
-    }
-  });
-
-  const recentLoads = await prisma.load.findMany({
-    where: { carrierId: userId },
-    orderBy: { createdAt: 'desc' },
-    take: 5,
-    include: { broker: { select: { companyName: true } } }
-  });
-
-  // Load Status grouping
-  const statusGroup = await prisma.load.groupBy({
-    by: ['status'],
-    where: { carrierId: userId, status: { not: 'AVAILABLE' } },
-    _count: { id: true }
-  });
   const statusData = statusGroup.map(g => ({ name: g.status, value: g._count.id }));
-
-  // Top Routes grouping
-  const routesDataRaw = await prisma.load.findMany({
-    where: { carrierId: userId, status: { in: ['DELIVERED', 'INVOICED'] } },
-    select: { originCity: true, destCity: true, price: true }
-  });
 
   const routesMap = new Map<string, number>();
   for (const load of routesDataRaw) {
@@ -71,23 +44,6 @@ export default async function CarrierDashboard({ userId }: { userId: string }) {
     .map(([route, revenue]) => ({ route, revenue }))
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5);
-
-  // Real data for the last 7 days
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-  sevenDaysAgo.setHours(0, 0, 0, 0);
-
-  const recentCompletedLoads = await prisma.load.findMany({
-    where: {
-      carrierId: userId,
-      status: { in: ['DELIVERED', 'INVOICED'] },
-      createdAt: { gte: sevenDaysAgo }
-    },
-    select: {
-      createdAt: true,
-      price: true
-    }
-  });
 
   const chartData = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date();
