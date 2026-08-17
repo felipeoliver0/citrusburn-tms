@@ -31,19 +31,19 @@ export default function Home() {
       <main className="relative z-10 flex flex-col items-center justify-center flex-1 text-center px-4 pt-12 pb-24">
         <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-blue-200 bg-white/60 backdrop-blur-md text-blue-700 text-sm font-bold shadow-sm mb-8 animate-fade-in-up hover:shadow-md hover:border-blue-300 transition-all cursor-default" style={{ animationDelay: '0.1s' }}>
           <Zap className="w-4 h-4 fill-blue-600 text-blue-600 animate-pulse" />
-          <span>The #1 TMS for Modern Logistics</span>
+          <span>Built for car haulers. Not enterprise.</span>
         </div>
 
         <h1 className="max-w-5xl text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 leading-[1.05] text-gray-900 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-          Move freight faster. <br className="hidden md:block" />
+          Dispatch faster. <br className="hidden md:block" />
           <span className="text-blue-600">
-            Grow revenue seamlessly.
+            Get paid sooner. Keep your drivers moving.
           </span>
         </h1>
 
         <p className="max-w-2xl text-lg md:text-xl text-gray-500 mb-10 font-medium animate-fade-in-up leading-relaxed" style={{ animationDelay: '0.3s' }}>
-          Connect Brokers, Carriers, and Drivers in one intelligent platform.
-          Stop chasing paperwork and start scaling your transport empire today.
+          One platform for brokers, carriers, and drivers.
+          eBOL, GPS tracking, invoicing, and a real loadboard — without the $45/seat price tag.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
@@ -60,8 +60,8 @@ export default function Home() {
       {/* Features Section */}
       <section id="features" className="relative z-10 max-w-7xl mx-auto px-6 py-24 w-full">
         <div className="text-center mb-20">
-          <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 tracking-tight">Everything you need to run the road</h2>
-          <p className="text-lg text-gray-500 font-medium max-w-2xl mx-auto leading-relaxed">Built by industry veterans, AxleGrid provides all the tools you need to dispatch, track, and bill without the headache.</p>
+          <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 tracking-tight">Everything a car hauler actually needs</h2>
+          <p className="text-lg text-gray-500 font-medium max-w-2xl mx-auto leading-relaxed">We built the tool we wish existed. No bloat, no call centers, no long-term contracts. Just the features you use every day.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -101,9 +101,9 @@ export default function Home() {
               <Zap className="w-4 h-4" />
               <span>Founding Carrier Program</span>
             </div>
-            <h2 className="text-3xl md:text-5xl font-black mb-6 tracking-tight">Built for the road, not a boardroom</h2>
+            <h2 className="text-3xl md:text-5xl font-black mb-6 tracking-tight">We answer our own support tickets</h2>
             <p className="text-lg text-gray-400 font-medium max-w-2xl mx-auto leading-relaxed">
-              We&apos;re a new platform built by people who understand car hauling. No call centers, no seat traps — just modern tools and direct support from the people who built it.
+              AxleGrid is a small team building the TMS we wish existed when we started. Every bug report goes straight to the people who wrote the code. No ticket queues, no outsourced support.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -184,7 +184,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between">
           <div className="flex items-center gap-2 mb-4 md:mb-0 text-gray-500 font-bold">
             <ShieldCheck className="w-5 h-5 text-blue-600" />
-            <span className="text-sm">© 2026 AxleGrid TMS. All rights reserved.</span>
+            <span className="text-sm">© 2026 AxleGrid. Made for car haulers.</span>
           </div>
           <div className="flex gap-6 text-sm font-bold text-gray-500">
             <Link href="/privacy" className="hover:text-blue-600 transition-colors" target="_blank">Privacy Policy</Link>
