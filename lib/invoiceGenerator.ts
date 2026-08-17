@@ -28,7 +28,7 @@ export function generateInvoice(data: InvoiceData) {
   const doc = new jsPDF('p', 'pt', 'a4');
 
   // Cores da Marca (Laranja/Cinza)
-  const brandColor = '#EA580C'; // Laranja Tailwind
+  const brandColor = '#2563EB'; // Laranja Tailwind
   const textColor = '#333333';
 
   // --- HEADER ---
