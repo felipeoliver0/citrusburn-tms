@@ -17,8 +17,7 @@ export function getSuggestedRate(distance: number): number {
     rate += distance * 0.85;
   }
 
-  const marketShift = 1 + Math.sin(distance) * 0.1;
-  return Math.round(rate * marketShift);
+  return Math.round(rate);
 }
 
 export function getRateBadge(offeredPrice: number, suggestedRate: number) {
@@ -26,6 +25,12 @@ export function getRateBadge(offeredPrice: number, suggestedRate: number) {
   const ratio = offeredPrice / suggestedRate;
   if (ratio >= 1.05) {
     return { label: '🔥 Great Deal', color: 'bg-green-100 text-green-700 border-green-200' };
+  }
+  if (ratio < 0.90) {
+    return { label: '⚠️ Below Market', color: 'bg-red-100 text-red-700 border-red-200' };
+  }
+  if (ratio >= 0.90 && ratio < 1.05) {
+    return { label: 'Fair Rate', color: 'bg-gray-100 text-gray-600 border-gray-200' };
   }
   return null;
 }
