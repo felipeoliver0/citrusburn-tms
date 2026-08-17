@@ -14,7 +14,7 @@ export async function updateLoadStatusAction(loadId: string, newStatus: LoadStat
   // Verify ownership
   const load = await prisma.load.findUnique({
     where: { id: loadId },
-    select: { brokerId: true }
+    select: { brokerId: true, status: true }
   });
 
   if (!load) {
@@ -23,6 +23,18 @@ export async function updateLoadStatusAction(loadId: string, newStatus: LoadStat
 
   if (load.brokerId !== userId && role !== 'ADMIN') {
     throw new Error('Forbidden: You do not own this load');
+  }
+
+  const VALID_TRANSITIONS: Record<string, string[]> = {
+    AVAILABLE:  ['OFFERED', 'BOOKED'],
+    OFFERED:    ['BOOKED', 'AVAILABLE'],
+    BOOKED:     ['IN_TRANSIT'],
+    IN_TRANSIT: ['DELIVERED'],
+    DELIVERED:  ['INVOICED'],
+  };
+
+  if (!VALID_TRANSITIONS[load.status]?.includes(newStatus)) {
+    throw new Error(`Invalid transition: cannot move load from ${load.status} to ${newStatus}`);
   }
 
   // Update status
