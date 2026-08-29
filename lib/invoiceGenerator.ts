@@ -27,8 +27,8 @@ export function generateInvoice(data: InvoiceData) {
   // Cria um documento PDF em formato A4
   const doc = new jsPDF('p', 'pt', 'a4');
 
-  // Cores da Marca (Laranja/Cinza)
-  const brandColor = '#2563EB'; // Laranja Tailwind
+  // Cores da Marca (AxleGrid brand-600)
+  const brandColor = '#2563EB'; // AxleGrid brand-600
   const textColor = '#333333';
 
   // --- HEADER ---
@@ -86,7 +86,7 @@ export function generateInvoice(data: InvoiceData) {
       ['Auto Transport Services', data.vin || 'N/A', '1', `$${data.price.toFixed(2)}`]
     ],
     theme: 'grid',
-    headStyles: { fillColor: [234, 88, 12] }, // Laranja
+    headStyles: { fillColor: [37, 99, 235] }, // AxleGrid brand-600 (#2563EB)
     styles: { fontSize: 10, cellPadding: 8 },
     columnStyles: {
       3: { halign: 'right' }
