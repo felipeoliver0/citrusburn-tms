@@ -21,9 +21,9 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    const user = await prisma.user.findUnique({ where: { id: userId }, select: { subscriptionStatus: true } });
-    if (!user || ['CANCELED', 'PAST_DUE', 'NONE'].includes(user.subscriptionStatus)) {
-      return NextResponse.json({ error: 'Payment required: Active subscription is needed to post loads.' }, { status: 402 });
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // Validate input with Zod
