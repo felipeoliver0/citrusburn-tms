@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import SignatureCanvas from 'react-signature-canvas';
 import DamageMarker, { DamageMarkerData } from '@/app/components/DamageMarker';
 import { submitInspectionAction } from '../../actions';
 import { Camera, CheckCircle2, ChevronRight, MapPin, Target, ShieldAlert, PenTool, Image as ImageIcon } from 'lucide-react';
 import { compressImage } from '@/lib/imageUtils';
+import { saveInspectionDraft, loadInspectionDraft, clearInspectionDraft } from '@/lib/offlineStorage';
+import { toast } from 'react-hot-toast';
 
 interface InspectionClientProps {
   loadId: string;
@@ -29,6 +31,37 @@ export default function InspectionClient({ loadId, type, origin, dest, initialVi
   const sigCanvas = useRef<SignatureCanvas>(null);
   const [podFileBase64, setPodFileBase64] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    async function loadDraft() {
+      const draft = await loadInspectionDraft(loadId, type);
+      if (draft) {
+        setStep(draft.step);
+        if (draft.vin) setVin(draft.vin);
+        if (draft.vinPhoto) setVinPhoto(draft.vinPhoto);
+        if (draft.vehiclePhotos) setVehiclePhotos(draft.vehiclePhotos);
+        if (draft.damages) setDamages(draft.damages);
+        if (draft.podFileBase64) setPodFileBase64(draft.podFileBase64);
+        toast.success('Offline draft loaded');
+      }
+      setIsLoaded(true);
+    }
+    loadDraft();
+  }, [loadId, type]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    saveInspectionDraft(loadId, type, {
+      step,
+      vin,
+      vinPhoto,
+      vehiclePhotos,
+      damages,
+      signature: '',
+      podFileBase64
+    });
+  }, [step, vin, vinPhoto, vehiclePhotos, damages, podFileBase64, isLoaded, loadId, type]);
 
   const handleNext = () => setStep(s => s + 1);
   const handlePrev = () => setStep(s => s - 1);
@@ -62,7 +95,7 @@ export default function InspectionClient({ loadId, type, origin, dest, initialVi
       }
     } catch (err) {
       console.error('Error uploading photo:', err);
-      alert('Error processing photo. Please try again.');
+      toast.error('Error processing photo. Please try again.');
     } finally {
       e.target.value = '';
     }
@@ -72,7 +105,7 @@ export default function InspectionClient({ loadId, type, origin, dest, initialVi
 
   const handleSubmit = async () => {
     if (sigCanvas.current?.isEmpty()) {
-      alert('Please provide a signature.');
+      toast.error('Please provide a signature.');
       return;
     }
 
@@ -93,12 +126,15 @@ export default function InspectionClient({ loadId, type, origin, dest, initialVi
       }
 
       await submitInspectionAction(formData);
+      
+      await clearInspectionDraft(loadId, type);
+      toast.success('Inspection submitted successfully!');
 
       router.push('/driver');
       router.refresh();
     } catch (e: any) {
       console.error('Inspection submit error:', e);
-      alert(`Error submitting inspection: ${e?.message || 'Unknown error'}`);
+      toast.error(`Error: You might be offline. Data is saved safely locally. ${e?.message || ''}`);
     } finally {
       setIsSubmitting(false);
     }
