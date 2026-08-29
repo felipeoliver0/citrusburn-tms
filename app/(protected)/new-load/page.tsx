@@ -52,7 +52,8 @@ export default function NovaCarga() {
         paymentType: formData.get('paymentType') as string,
         pickupDate: formData.get('pickupDate') as string,
         deliveryDate: formData.get('deliveryDate') as string,
-        vehiclesList: vehicles 
+        vehiclesList: vehicles,
+        postToCD: formData.get('postToCD') === 'true'
       };
 
       const res = await fetch('/api/load/create', {
