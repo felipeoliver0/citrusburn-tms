@@ -20,20 +20,7 @@ export function getSuggestedRate(distance: number): number {
   return Math.round(rate);
 }
 
-export function getRateBadge(offeredPrice: number, suggestedRate: number) {
-  if (suggestedRate === 0) return null;
-  const ratio = offeredPrice / suggestedRate;
-  if (ratio >= 1.05) {
-    return { label: '🔥 Great Deal', color: 'bg-green-100 text-green-700 border-green-200' };
-  }
-  if (ratio < 0.90) {
-    return { label: '⚠️ Below Market', color: 'bg-red-100 text-red-700 border-red-200' };
-  }
-  if (ratio >= 0.90 && ratio < 1.05) {
-    return { label: 'Fair Rate', color: 'bg-gray-100 text-gray-600 border-gray-200' };
-  }
-  return null;
-}
+
 
 /** @deprecated Use getSuggestedRate */
 export const getSmartRate = getSuggestedRate;

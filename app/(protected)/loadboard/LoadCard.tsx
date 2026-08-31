@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { requestLoadAction } from './actions';
 import { Truck, Navigation, Phone, ShieldCheck, DollarSign, Calendar, Info } from 'lucide-react';
-import { getSuggestedRate, getRateBadge } from '@/lib/pricing';
+import { getSuggestedRate } from '@/lib/pricing';
 
 export default function LoadCard({ load, currentUser, isPending }: { load: any, currentUser: any, isPending: boolean }) {
   const [isRequestModalOpen, setRequestModalOpen] = useState(false);
@@ -36,7 +36,11 @@ export default function LoadCard({ load, currentUser, isPending }: { load: any, 
   const vehicleArray = Array.isArray(load.vehiclesData) ? load.vehiclesData : JSON.parse(load.vehiclesData as string || '[]');
 
   const suggestedRate = getSuggestedRate(load.distance);
-  const badge = getRateBadge(load.price, suggestedRate);
+  
+  // Calculate if posted recently (within last 3 hours)
+  const postedAt = new Date(load.createdAt);
+  const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000);
+  const isRecent = postedAt >= threeHoursAgo;
 
   return (
     <>
@@ -50,9 +54,13 @@ export default function LoadCard({ load, currentUser, isPending }: { load: any, 
           <div>
             <div className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-2">
               ${load.price.toLocaleString()}
-              {badge && (
-                <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md border ${badge.color}`}>
-                  {badge.label}
+              {isRecent && (
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md border bg-blue-50 text-blue-600 border-blue-200 shadow-sm flex items-center gap-1">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                  </span>
+                  NEW
                 </span>
               )}
             </div>
