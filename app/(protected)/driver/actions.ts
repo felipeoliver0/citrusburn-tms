@@ -7,10 +7,14 @@ import { SubmitInspectionSchema } from '@/lib/validations';
 import { uploadBase64ToBlob } from '@/lib/blobStorage';
 
 export async function submitInspectionAction(formData: FormData) {
-  const { userId } = await getSession();
+  const { userId, role } = await getSession();
 
   if (!userId) {
     throw new Error('Unauthorized');
+  }
+
+  if (role !== 'DRIVER') {
+    throw new Error('Forbidden');
   }
 
   const rawLoadId = formData.get('loadId') as string;
@@ -55,8 +59,16 @@ export async function submitInspectionAction(formData: FormData) {
   const load = await prisma.load.findUnique({ where: { id: loadId } });
   if (!load) throw new Error('Load not found');
 
-  if (load.driverId !== userId && load.carrierId !== userId) {
-    throw new Error('Forbidden: You do not own this load');
+  if (load.driverId !== userId) {
+    throw new Error('Forbidden: Driver is not assigned to this load');
+  }
+
+  if (type === 'pickup' && load.status !== 'BOOKED') {
+    throw new Error('Load is not ready for pickup inspection');
+  }
+
+  if (type === 'delivery' && load.status !== 'IN_TRANSIT') {
+    throw new Error('Load is not in transit');
   }
 
   // Process uploads concurrently for speed

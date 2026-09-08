@@ -9,7 +9,7 @@ export default async function InspectionPage({
   params: Promise<{ loadId: string }>
 }) {
   const { loadId } = await params;
-  const { userId } = await verifySession();
+  const { userId, role } = await verifySession();
 
   const load = await prisma.load.findUnique({
     where: { id: loadId }
@@ -19,9 +19,9 @@ export default async function InspectionPage({
     return <div className="text-white p-8">Load not found.</div>;
   }
 
-  // Security check: Must be the carrier or driver
-  if (load.carrierId !== userId && load.driverId !== userId) {
-    return <div className="text-white p-8">Forbidden: You are not assigned to this load.</div>;
+  // Security check: Must be the assigned driver
+  if (role !== 'DRIVER' || load.driverId !== userId) {
+    return <div className="text-white p-8">Forbidden: Only the assigned driver can perform this inspection.</div>;
   }
 
   // Determine if this is a pickup or delivery inspection based on status
