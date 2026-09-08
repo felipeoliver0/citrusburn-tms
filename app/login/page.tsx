@@ -59,7 +59,7 @@ export default async function Login({
       redirect(`/verify?email=${encodeURIComponent(user.email)}&error=Please+verify+your+email`);
     }
 
-    const token = await signToken({ userId: user.id, role: user.role, onboardingCompleted: user.onboardingCompleted });
+    const token = await signToken({ userId: user.id, role: user.role, onboardingCompleted: user.onboardingCompleted, sessionVersion: user.sessionVersion });
     const cookieStore = await cookies();
     
     cookieStore.delete('userId');

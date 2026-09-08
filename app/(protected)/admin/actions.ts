@@ -28,7 +28,10 @@ export async function resetUserPassword(formData: FormData) {
 
     await prisma.user.update({
       where: { id: targetUserId },
-      data: { passwordHash }
+      data: { 
+        passwordHash,
+        sessionVersion: { increment: 1 } 
+      }
     });
 
     await logAudit(userId, 'ADMIN_PASSWORD_RESET', 'User', targetUserId);

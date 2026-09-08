@@ -2,6 +2,7 @@ import 'server-only';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
+import prisma from '@/lib/prisma';
 
 /**
  * Ensures the user is authenticated.
@@ -13,9 +14,20 @@ export const verifySession = cache(async () => {
   const userId = headersList.get('x-user-id');
   const role = headersList.get('x-user-role');
   const onboardingCompleted = headersList.get('x-user-onboarding') === 'true';
+  const sessionVersionStr = headersList.get('x-session-version');
 
   if (!userId) {
     redirect('/login');
+  }
+
+  const sessionVersion = sessionVersionStr ? parseInt(sessionVersionStr, 10) : 0;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { sessionVersion: true }
+  });
+
+  if (!user || user.sessionVersion !== sessionVersion) {
+    redirect('/login?error=Session+expired.+Please+log+in+again.');
   }
 
   return { isAuth: true, userId, role, onboardingCompleted };
@@ -30,6 +42,21 @@ export const getSession = cache(async () => {
   const userId = headersList.get('x-user-id');
   const role = headersList.get('x-user-role');
   const onboardingCompleted = headersList.get('x-user-onboarding') === 'true';
+  const sessionVersionStr = headersList.get('x-session-version');
   
-  return { isAuth: !!userId, userId, role, onboardingCompleted };
+  if (!userId) {
+    return { isAuth: false, userId: null, role: null, onboardingCompleted: false };
+  }
+
+  const sessionVersion = sessionVersionStr ? parseInt(sessionVersionStr, 10) : 0;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { sessionVersion: true }
+  });
+
+  if (!user || user.sessionVersion !== sessionVersion) {
+    return { isAuth: false, userId: null, role: null, onboardingCompleted: false };
+  }
+
+  return { isAuth: true, userId, role, onboardingCompleted };
 });

@@ -47,6 +47,7 @@ export async function handleResetPassword(formData: FormData) {
     where: { email: user.email },
     data: {
       passwordHash: hashedPassword,
+      sessionVersion: { increment: 1 },
       resetPasswordCode: null,
       resetPasswordExpiry: null
     }

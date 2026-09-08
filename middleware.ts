@@ -14,6 +14,7 @@ export async function middleware(request: NextRequest) {
   requestHeaders.delete('x-user-id');
   requestHeaders.delete('x-user-role');
   requestHeaders.delete('x-user-onboarding');
+  requestHeaders.delete('x-session-version');
 
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const cspHeader = `
@@ -86,6 +87,7 @@ export async function middleware(request: NextRequest) {
     requestHeaders.set('x-user-id', payload.userId);
     requestHeaders.set('x-user-role', payload.role);
     requestHeaders.set('x-user-onboarding', payload.onboardingCompleted ? 'true' : 'false');
+    requestHeaders.set('x-session-version', (payload.sessionVersion || 0).toString());
 
     const roleRedirect = getRoleRedirect(payload.role, pathname);
     if (roleRedirect && !pathname.startsWith('/api/')) {
@@ -101,7 +103,7 @@ export async function middleware(request: NextRequest) {
     // Sliding session: If token expires in less than 1 hour, issue a new one
     const currentTime = Math.floor(Date.now() / 1000);
     if (payload.exp && (payload.exp - currentTime < 3600)) {
-      const newToken = await signToken({ userId: payload.userId, role: payload.role, onboardingCompleted: payload.onboardingCompleted });
+      const newToken = await signToken({ userId: payload.userId, role: payload.role, onboardingCompleted: payload.onboardingCompleted, sessionVersion: payload.sessionVersion || 0 });
       response.cookies.set({
         name: 'auth_token',
         value: newToken,

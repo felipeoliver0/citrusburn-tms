@@ -43,6 +43,7 @@ model User {
   id               String        @id @default(uuid())
   email            String        @unique
   passwordHash     String
+  sessionVersion   Int           @default(0)
   role             Role          @default(CARRIER)
   
   fullName         String?       

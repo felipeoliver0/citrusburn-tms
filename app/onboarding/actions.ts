@@ -21,7 +21,7 @@ export async function completeOnboardingAction(formData: FormData) {
   if (!mcNumber) throw new Error('MC Number is required');
   if (!usdotNumber) throw new Error('US DOT Number is required');
 
-  await prisma.user.update({
+  const updatedUser = await prisma.user.update({
     where: { id: userId },
     data: {
       companyName,
@@ -35,7 +35,7 @@ export async function completeOnboardingAction(formData: FormData) {
   await logAudit(userId, 'ONBOARDING_COMPLETED', 'User', userId, { companyName, mcNumber });
 
   const { role } = await getSession();
-  const token = await signToken({ userId, role: role || 'CARRIER', onboardingCompleted: true });
+  const token = await signToken({ userId, role: role || 'CARRIER', onboardingCompleted: true, sessionVersion: updatedUser.sessionVersion });
   const cookieStore = await cookies();
   cookieStore.set('auth_token', token, {
     httpOnly: true,
