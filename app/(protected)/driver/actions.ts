@@ -133,22 +133,15 @@ export async function submitInspectionAction(formData: FormData) {
       });
 
       // To keep it simple, we use the regular functions, but since transitionLoad has its own db calls,
-      // it might not use the transaction `tx` natively unless we pass it.
-      // However, we can update the Load natively here for the POD, and update status.
-      // But transitionLoad handles audit and history. We will call transitionLoad inside the try-block.
-      // Wait, transitionLoad uses `prisma` internally, not `tx`. 
-      // If we want atomic, we should pass `tx` to transitionLoad or just run it sequentially 
-      // and if it fails, the outer catch will rollback the blobs. The DB might be partially updated if we don't use `tx` for everything.
-      // Actually, just catching the error and rolling back blobs is 99% of the fix.
+      // we pass the transaction `tx` natively so it executes atomically.
+      if (type === 'pickup') {
+        await transitionLoad(loadId, 'IN_TRANSIT', userId, role as Role, {}, tx);
+      } else {
+        await transitionLoad(loadId, 'DELIVERED', userId, role as Role, {
+          ...(uploadedPod ? { podDocumentUrl: uploadedPod } : {})
+        }, tx);
+      }
     });
-    
-    if (type === 'pickup') {
-      await transitionLoad(loadId, 'IN_TRANSIT', userId, role as Role, {});
-    } else {
-      await transitionLoad(loadId, 'DELIVERED', userId, role as Role, {
-        ...(uploadedPod ? { podDocumentUrl: uploadedPod } : {})
-      });
-    }
 
   } catch (error: any) {
     // Database failure -> Cleanup blobs
