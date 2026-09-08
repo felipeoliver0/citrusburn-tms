@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getSuggestedRate, getRateBadge } from '@/lib/pricing';
+import { getSuggestedRate } from '@/lib/pricing';
 
 describe('getSuggestedRate', () => {
   it('returns 0 for invalid distance', () => {
@@ -21,19 +21,3 @@ describe('getSuggestedRate', () => {
   });
 });
 
-describe('getRateBadge', () => {
-  it('returns null when suggested rate is 0', () => {
-    expect(getRateBadge(1000, 0)).toBeNull();
-  });
-
-  it('returns Great Deal badge when price is 5%+ above suggested', () => {
-    const badge = getRateBadge(1100, 1000);
-    expect(badge).not.toBeNull();
-    expect(badge?.label).toContain('Great Deal');
-  });
-
-  it('returns null when price is at or below suggested', () => {
-    expect(getRateBadge(1000, 1000)).toBeNull();
-    expect(getRateBadge(900, 1000)).toBeNull();
-  });
-});

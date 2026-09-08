@@ -4,10 +4,9 @@ import prisma from '@/lib/prisma';
 import { hashPassword } from '@/lib/hash';
 import { z } from 'zod';
 import { getTrialEndDate } from '@/lib/subscription';
-import { headers } from 'next/headers';
+import { headers, cookies } from 'next/headers';
 import { isRateLimited } from '@/lib/rateLimit';
-import { randomInt } from 'crypto';
-import { Resend } from 'resend';
+import { signToken } from '@/lib/auth';
 
 // Relaxed validation schema to allow optional fields
 const AdvancedRegisterSchema = z.object({
@@ -50,7 +49,7 @@ const AdvancedRegisterSchema = z.object({
 
 export type RegisterFormData = z.infer<typeof AdvancedRegisterSchema>;
 
-export async function processRegistration(data: RegisterFormData): Promise<{ success: boolean; error?: string }> {
+export async function processRegistration(data: RegisterFormData): Promise<{ success: boolean; redirectUrl?: string; error?: string }> {
   try {
     const parsed = AdvancedRegisterSchema.safeParse(data);
     if (!parsed.success) {
@@ -83,20 +82,17 @@ export async function processRegistration(data: RegisterFormData): Promise<{ suc
     if (validData.ownerFirstName || validData.ownerLastName) {
       fullName = `${validData.ownerFirstName || ''} ${validData.ownerLastName || ''}`.trim();
     }
-    
-    const code = randomInt(100000, 999999).toString();
-    const codeExpiry = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
 
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         email: validData.email,
         passwordHash: hashedPassword,
         role: validData.role,
         fullName: fullName,
         companyName: validData.companyName,
-        emailVerified: false,
-        verificationCode: code,
-        verificationCodeExpiry: codeExpiry,
+        emailVerified: true,
+        verificationCode: null,
+        verificationCodeExpiry: null,
         
         // Advanced Fields
         companyAddress: validData.companyAddress,
@@ -120,33 +116,20 @@ export async function processRegistration(data: RegisterFormData): Promise<{ suc
       },
     });
 
-    if (process.env.RESEND_API_KEY) {
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({
-        from: 'AxleGrid <noreply@axlegrid.com>',
-        to: validData.email,
-        subject: 'Verify your email - AxleGrid',
-        html: `
-          <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-w: 600px; margin: 0 auto; background-color: #f8fafc; padding: 40px 20px;">
-            <div style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
-              <div style="background-color: #09090b; padding: 30px; text-align: center;">
-                <div style="display: inline-block; width: 48px; height: 48px; background-color: #2563eb; color: #ffffff; border-radius: 12px; font-size: 24px; font-weight: bold; line-height: 48px; margin-bottom: 12px;">A</div>
-                <h1 style="color: #ffffff; font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -0.5px;">AxleGrid</h1>
-              </div>
-              <div style="padding: 40px 30px;">
-                <h2 style="color: #0f172a; font-size: 20px; margin-top: 0; margin-bottom: 16px; font-weight: 700;">Welcome, ${fullName}!</h2>
-                <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-top: 0; margin-bottom: 24px;">Thanks for registering. Please use the code below to verify your email address:</p>
-                <div style="background-color: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 30px;">
-                  <span style="font-family: monospace; font-size: 40px; font-weight: 800; letter-spacing: 8px; color: #0f172a;">${code}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        `
-      });
-    }
+    // Auto-login newly registered user
+    const token = await signToken({ userId: user.id, role: user.role, onboardingCompleted: user.onboardingCompleted });
+    const cookieStore = await cookies();
+    
+    cookieStore.delete('userId');
+    cookieStore.set('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7200, // 2 hours
+      path: '/'
+    });
 
-    return { success: true };
+    return { success: true, redirectUrl: '/dashboard' };
     
   } catch (error: any) {
     if (error?.code === 'P2002') {

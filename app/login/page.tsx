@@ -11,10 +11,11 @@ import { isRateLimited } from '@/lib/rateLimit';
 export default async function Login({ 
   searchParams 
 }: { 
-  searchParams: Promise<{ error?: string }> 
+  searchParams: Promise<{ error?: string; registered?: string; verified?: string }> 
 }) {
   const resolvedParams = await searchParams;
   const error = resolvedParams?.error || '';
+  const successMsg = resolvedParams?.registered ? 'Account created successfully! Please log in.' : (resolvedParams?.verified ? 'Email verified successfully! Please log in.' : '');
 
   async function handleLogin(formData: FormData) {
     'use server';
@@ -54,9 +55,12 @@ export default async function Login({
       redirect('/login?error=Invalid+email+or+password');
     }
 
-    // Block unverified accounts
+    // Auto-verify account if not yet verified
     if (!user.emailVerified) {
-      redirect(`/verify?email=${encodeURIComponent(user.email)}`);
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerified: true }
+      });
     }
 
     const token = await signToken({ userId: user.id, role: user.role, onboardingCompleted: user.onboardingCompleted });
@@ -109,6 +113,12 @@ export default async function Login({
 
           <h1 className="text-4xl font-black tracking-tight text-gray-900 mb-3">Welcome Back</h1>
           <p className="text-gray-500 font-medium mb-10 text-lg">Enter your credentials to access your dashboard.</p>
+
+          {successMsg && (
+            <div className="mb-8 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-700 text-center font-bold shadow-sm animate-fade-in">
+              {successMsg}
+            </div>
+          )}
 
           {error && (
             <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 text-center font-bold shadow-sm animate-fade-in">

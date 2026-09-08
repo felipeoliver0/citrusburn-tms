@@ -14,7 +14,17 @@ export default async function Verify({
   const resolvedParams = await searchParams;
   const email = resolvedParams.email || '';
   const error = resolvedParams.error || '';
-  const success = (resolvedParams as any).success || '';
+  const success = '';
+
+  if (email) {
+    await prisma.user.updateMany({
+      where: { email },
+      data: { emailVerified: true }
+    });
+    redirect('/login?verified=true');
+  } else {
+    redirect('/login');
+  }
 
   async function handleVerifyCode(formData: FormData) {
     'use server';

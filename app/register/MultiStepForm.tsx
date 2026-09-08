@@ -63,7 +63,8 @@ export default function MultiStepForm() {
     try {
       const res = await processRegistration(formData as RegisterFormData);
       if (res.success) {
-        router.push('/verify?email=' + encodeURIComponent(formData.email || ''));
+        router.push(res.redirectUrl || '/dashboard');
+        router.refresh();
       } else {
         setError(res.error || 'An unexpected error occurred.');
         setLoading(false);
