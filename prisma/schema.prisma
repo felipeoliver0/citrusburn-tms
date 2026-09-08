@@ -145,6 +145,20 @@ model SavedSearch {
 }
 
 
+enum TrailerType {
+  OPEN
+  ENCLOSED
+  FLATBED
+  DRIVE_AWAY
+}
+
+enum PaymentType {
+  COD
+  CERTIFIED_FUNDS
+  CHECK
+  ACH
+}
+
 model Load {
   id             String        @id @default(uuid())
   originZip      String
@@ -162,8 +176,8 @@ model Load {
   deliveryDate   DateTime?     
 
   vehiclesData   Json          @default("[]")
-  trailerType    String        @default("OPEN")
-  paymentType    String        @default("COD") 
+  trailerType    TrailerType   @default(OPEN)
+  paymentType    PaymentType   @default(COD)
   
   currentLat     Float?        
   currentLng     Float?        

@@ -72,8 +72,8 @@ export const CreateLoadSchema = z.object({
   destZip: z.string().min(3, 'Destination ZIP is required').max(20).trim(),
   price: z.number().positive('Price must be positive').max(1_000_000),
   distance: z.number().positive('Distance must be positive').max(100_000),
-  trailerType: z.string().min(1).max(50).default('OPEN'),
-  paymentType: z.string().min(1).max(50).default('COD'),
+  trailerType: z.enum(['OPEN', 'ENCLOSED', 'FLATBED', 'DRIVE_AWAY']).default('OPEN'),
+  paymentType: z.enum(['COD', 'CERTIFIED_FUNDS', 'CHECK', 'ACH']).default('COD'),
   vehiclesList: z.array(VehicleSchema).max(20).default([]),
   pickupDate: z.string().min(1, 'Pickup date is required'),
   deliveryDate: z.string().min(1, 'Delivery date is required'),
@@ -135,8 +135,8 @@ export const UpdateLoadSchema = z.object({
   destZip: z.string().min(3).max(20).trim(),
   price: z.number().positive().max(1_000_000),
   distance: z.number().positive().max(100_000),
-  trailerType: z.string().min(1).max(50),
-  paymentType: z.string().min(1).max(50),
+  trailerType: z.enum(['OPEN', 'ENCLOSED', 'FLATBED', 'DRIVE_AWAY']),
+  paymentType: z.enum(['COD', 'CERTIFIED_FUNDS', 'CHECK', 'ACH']),
   vehiclesList: z.array(VehicleSchema).max(20).default([]),
 }).superRefine((data, ctx) => {
   // Rate Per Mile (RPM) Validation to catch absurd values
