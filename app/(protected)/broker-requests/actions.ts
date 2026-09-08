@@ -92,11 +92,18 @@ export async function rejectRequestAction(formData: FormData) {
   if (!request) throw new Error('Request not found');
   if (request.load.brokerId !== userId) throw new Error('Forbidden: Not your load');
 
-  // Update request to REJECTED
-  await prisma.loadRequest.update({
-    where: { id: requestId },
+  // Update request to REJECTED atomically, only if PENDING
+  const result = await prisma.loadRequest.updateMany({
+    where: { 
+      id: requestId,
+      status: 'PENDING'
+    },
     data: { status: 'REJECTED' }
   });
+
+  if (result.count !== 1) {
+    throw new Error('Request is no longer pending');
+  }
 
   await createNotification(
     request.carrierId,
