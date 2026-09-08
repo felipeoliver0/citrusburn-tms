@@ -12,7 +12,6 @@ import prisma from '@/lib/prisma';
 export const verifySession = cache(async () => {
   const headersList = await headers();
   const userId = headersList.get('x-user-id');
-  const role = headersList.get('x-user-role');
   const onboardingCompleted = headersList.get('x-user-onboarding') === 'true';
   const sessionVersionStr = headersList.get('x-session-version');
 
@@ -23,14 +22,14 @@ export const verifySession = cache(async () => {
   const sessionVersion = sessionVersionStr ? parseInt(sessionVersionStr, 10) : 0;
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { sessionVersion: true }
+    select: { sessionVersion: true, role: true, deletedAt: true }
   });
 
-  if (!user || user.sessionVersion !== sessionVersion) {
+  if (!user || user.sessionVersion !== sessionVersion || user.deletedAt !== null) {
     redirect('/login?error=Session+expired.+Please+log+in+again.');
   }
 
-  return { isAuth: true, userId, role, onboardingCompleted };
+  return { isAuth: true, userId, role: user.role, onboardingCompleted };
 });
 
 /**
@@ -40,7 +39,6 @@ export const verifySession = cache(async () => {
 export const getSession = cache(async () => {
   const headersList = await headers();
   const userId = headersList.get('x-user-id');
-  const role = headersList.get('x-user-role');
   const onboardingCompleted = headersList.get('x-user-onboarding') === 'true';
   const sessionVersionStr = headersList.get('x-session-version');
   
@@ -51,12 +49,12 @@ export const getSession = cache(async () => {
   const sessionVersion = sessionVersionStr ? parseInt(sessionVersionStr, 10) : 0;
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { sessionVersion: true }
+    select: { sessionVersion: true, role: true, deletedAt: true }
   });
 
-  if (!user || user.sessionVersion !== sessionVersion) {
+  if (!user || user.sessionVersion !== sessionVersion || user.deletedAt !== null) {
     return { isAuth: false, userId: null, role: null, onboardingCompleted: false };
   }
 
-  return { isAuth: true, userId, role, onboardingCompleted };
+  return { isAuth: true, userId, role: user.role, onboardingCompleted };
 });
