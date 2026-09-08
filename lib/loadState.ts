@@ -4,10 +4,32 @@ import { LoadStatus, Role, Prisma } from '@prisma/client';
 export const VALID_TRANSITIONS: Record<LoadStatus, LoadStatus[]> = {
   AVAILABLE:  ['OFFERED', 'BOOKED'],
   OFFERED:    ['BOOKED', 'AVAILABLE'],
-  BOOKED:     ['IN_TRANSIT', 'AVAILABLE'], // Added AVAILABLE in case of cancellation
+  BOOKED:     ['IN_TRANSIT', 'AVAILABLE'],
   IN_TRANSIT: ['DELIVERED'],
   DELIVERED:  ['INVOICED'],
   INVOICED:   [],
+};
+
+export const TRANSITION_PERMISSIONS: Record<LoadStatus, Partial<Record<LoadStatus, Role[]>>> = {
+  AVAILABLE: {
+    OFFERED: ['BROKER', 'ADMIN'],
+    BOOKED: ['CARRIER', 'ADMIN'],
+  },
+  OFFERED: {
+    AVAILABLE: ['CARRIER', 'BROKER', 'ADMIN'],
+    BOOKED: ['CARRIER', 'ADMIN'],
+  },
+  BOOKED: {
+    IN_TRANSIT: ['DRIVER', 'ADMIN'],
+    AVAILABLE: ['CARRIER', 'ADMIN'],
+  },
+  IN_TRANSIT: {
+    DELIVERED: ['DRIVER', 'ADMIN'],
+  },
+  DELIVERED: {
+    INVOICED: ['BROKER', 'ADMIN'],
+  },
+  INVOICED: {},
 };
 
 export async function transitionLoad(
@@ -49,9 +71,15 @@ export async function transitionLoad(
     }
   }
 
-  // Validate state machine transition
+  // Validate state machine transition exists
   if (!VALID_TRANSITIONS[load.status as LoadStatus]?.includes(newStatus)) {
     throw new Error(`Invalid transition: cannot move load from ${load.status} to ${newStatus}`);
+  }
+
+  // Validate state machine transition authorization
+  const allowedRoles = TRANSITION_PERMISSIONS[load.status as LoadStatus]?.[newStatus] ?? [];
+  if (!allowedRoles.includes(actorRole)) {
+    throw new Error(`Forbidden: Role ${actorRole} cannot perform ${load.status} → ${newStatus}`);
   }
 
   // Perform atomic update
