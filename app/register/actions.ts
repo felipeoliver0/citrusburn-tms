@@ -7,6 +7,7 @@ import { getTrialEndDate } from '@/lib/subscription';
 import { headers } from 'next/headers';
 import { isRateLimited } from '@/lib/rateLimit';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 import { Resend } from 'resend';
 
 // Relaxed validation schema to allow optional fields
