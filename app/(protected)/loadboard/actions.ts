@@ -58,11 +58,7 @@ export async function requestLoadAction(loadId: string, bidPrice: number | null)
   }
 
   try {
-    const activeRequest = await prisma.loadRequest.findFirst({
-      where: { loadId, carrierId: actionUserId, status: 'PENDING' }
-    });
-
-    if (!activeRequest) {
+    try {
       await prisma.loadRequest.create({
         data: { 
           loadId, 
@@ -71,12 +67,27 @@ export async function requestLoadAction(loadId: string, bidPrice: number | null)
           bidPrice
         }
       });
-    } else if (bidPrice !== null) {
-      // Allow updating bid if it's still pending
-      await prisma.loadRequest.update({
-        where: { id: activeRequest.id },
-        data: { bidPrice }
-      });
+    } catch (e: any) {
+      if (e.code === 'P2002') {
+        // Unique constraint failed, meaning a request already exists
+        const existing = await prisma.loadRequest.findUnique({
+          where: { loadId_carrierId: { loadId, carrierId: actionUserId } }
+        });
+        
+        if (existing?.status !== 'PENDING') {
+          return { error: `Your request was already processed (${existing?.status})` };
+        }
+        
+        if (bidPrice !== null) {
+          // Allow updating bid if it's still pending
+          await prisma.loadRequest.update({
+            where: { id: existing.id },
+            data: { bidPrice }
+          });
+        }
+      } else {
+        throw e;
+      }
     }
 
     revalidatePath('/loadboard');

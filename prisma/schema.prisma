@@ -227,6 +227,7 @@ model LoadRequest {
   @@index([carrierId, status])
   @@index([loadId])
   @@index([loadId, status])
+  @@unique([loadId, carrierId])
 }
 
 model Review {
