@@ -70,7 +70,10 @@ export async function deleteUser(formData: FormData) {
   try {
     await prisma.user.update({
       where: { id: targetUserId },
-      data: { deletedAt: new Date() }
+      data: { 
+        deletedAt: new Date(),
+        sessionVersion: { increment: 1 }
+      }
     });
 
     await logAudit(userId, 'ADMIN_USER_SOFT_DELETE', 'User', targetUserId);
@@ -107,7 +110,10 @@ export async function updateUserRole(formData: FormData) {
 
     await prisma.user.update({
       where: { id: targetUserId },
-      data: { role: newRole }
+      data: { 
+        role: newRole,
+        sessionVersion: { increment: 1 }
+      }
     });
 
     await logAudit(userId, 'ADMIN_ROLE_CHANGED', 'User', targetUserId, {
@@ -120,5 +126,32 @@ export async function updateUserRole(formData: FormData) {
   } catch (error) {
     console.error('Failed to update role:', error instanceof Error ? error.message : 'Unknown error');
     return { error: 'Failed to update user role.' };
+  }
+}
+
+export async function revokeUserSession(formData: FormData) {
+  const { userId, role } = await getSession();
+  if (!userId || role !== 'ADMIN') {
+    return { error: 'Unauthorized. Only admins can perform this action.' };
+  }
+
+  const parsedUserId = z.string().uuid().safeParse(formData.get('userId'));
+  if (!parsedUserId.success) return { error: 'Invalid user ID' };
+  
+  const targetUserId = parsedUserId.data;
+
+  try {
+    await prisma.user.update({
+      where: { id: targetUserId },
+      data: { sessionVersion: { increment: 1 } }
+    });
+
+    await logAudit(userId, 'ADMIN_REVOKE_SESSION', 'User', targetUserId);
+
+    revalidatePath('/admin/users');
+    return { success: 'User sessions revoked globally.' };
+  } catch (error) {
+    console.error('Failed to revoke session:', error instanceof Error ? error.message : 'Unknown error');
+    return { error: 'Failed to revoke user session.' };
   }
 }
