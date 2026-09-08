@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { getSession } from '@/lib/dal';
 import { z } from 'zod';
+import { hasActiveSubscription } from '@/lib/subscription';
 
 export async function requestLoadAction(loadId: string, bidPrice: number | null) {
   const { userId: actionUserId, role } = await getSession();
@@ -19,9 +20,20 @@ export async function requestLoadAction(loadId: string, bidPrice: number | null)
     return { error: 'Invalid input parameters' };
   }
 
-  const user = await prisma.user.findUnique({ where: { id: actionUserId }, select: { subscriptionStatus: true } });
-  if (!user || ['CANCELED', 'PAST_DUE', 'NONE'].includes(user.subscriptionStatus)) {
-    return { error: 'Payment required: Active subscription is needed to bid on loads.' };
+  const user = await prisma.user.findUnique({
+    where: { id: actionUserId },
+    select: {
+      role: true,
+      subscriptionStatus: true,
+      trialEndsAt: true,
+      subscriptionEndsAt: true,
+    }
+  });
+
+  if (!user || !hasActiveSubscription(user)) {
+    return {
+      error: 'Payment required: Active subscription is needed to bid on loads.'
+    };
   }
 
   try {
