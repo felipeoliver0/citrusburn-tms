@@ -200,6 +200,7 @@ export default async function MyLoads(props: { searchParams: Promise<{ [key: str
       where: {
         id: loadId,
         carrierId: actionUserId,
+        status: 'BOOKED',
       },
       data: {
         driverId: driver.id,
