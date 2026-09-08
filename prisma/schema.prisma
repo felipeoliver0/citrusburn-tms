@@ -160,6 +160,13 @@ enum PaymentType {
   ACH
 }
 
+enum ExternalPostingStatus {
+  NOT_REQUESTED
+  PENDING
+  POSTED
+  FAILED
+}
+
 model Load {
   id             String        @id @default(uuid())
   originZip      String
@@ -184,6 +191,10 @@ model Load {
   currentLng     Float?
 
   podDocumentUrl String? // Base64 ou URL real do comprovante de entrega (POD/BOL)
+
+  centralDispatchStatus ExternalPostingStatus @default(NOT_REQUESTED)
+  centralDispatchId     String?
+  centralDispatchError  String?
 
   brokerId       String
   broker         User          @relation("BrokerLoads", fields: [brokerId], references: [id], onDelete: Cascade)

@@ -69,16 +69,46 @@ export async function POST(req: Request) {
         vehiclesData: vehiclesList,
         trailerType,
         paymentType,
+        centralDispatchStatus: postToCD ? 'PENDING' : 'NOT_REQUESTED',
       }
     });
 
     if (postToCD) {
-      await postLoadToCentralDispatch({
-        originCity,
-        destCity,
-        price,
-        vehiclesData: vehiclesList,
-      });
+      try {
+        const cdResult = await postLoadToCentralDispatch({
+          originCity,
+          destCity,
+          price,
+          vehiclesData: vehiclesList,
+        });
+
+        if (cdResult.success) {
+          await prisma.load.update({
+            where: { id: newLoad.id },
+            data: { 
+              centralDispatchStatus: 'POSTED', 
+              centralDispatchId: cdResult.externalId 
+            }
+          });
+        } else {
+          await prisma.load.update({
+            where: { id: newLoad.id },
+            data: { 
+              centralDispatchStatus: 'FAILED', 
+              centralDispatchError: cdResult.error || 'Unknown CD Error' 
+            }
+          });
+        }
+      } catch (err: any) {
+        console.error("Central Dispatch Posting Error:", err);
+        await prisma.load.update({
+          where: { id: newLoad.id },
+          data: { 
+            centralDispatchStatus: 'FAILED', 
+            centralDispatchError: err.message || 'Failed to post to Central Dispatch' 
+          }
+        });
+      }
     }
 
     revalidatePath('/loadboard');
