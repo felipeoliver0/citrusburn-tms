@@ -156,11 +156,7 @@ export default function InspectionClient({ loadId, type, origin, dest, initialVi
         uploadTasks.push(doUpload(`vehicle_${idx}`, photo.base64, `vehicle-${loadId}-${idx}.jpeg`, 'VEHICLE'));
       });
 
-      damages.forEach((damage, idx) => {
-        if (damage.photo) {
-          uploadTasks.push(doUpload(`damage_${idx}`, damage.photo, `damage-${loadId}-${idx}.jpeg`, 'DAMAGE'));
-        }
-      });
+
 
       const uploadedResults = await Promise.all(uploadTasks);
       const urlMap: Record<string, string> = {};
