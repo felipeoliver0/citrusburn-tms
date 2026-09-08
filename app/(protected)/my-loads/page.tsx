@@ -242,7 +242,17 @@ export default async function MyLoads(props: { searchParams: Promise<{ [key: str
     if (!parsed.success) throw new Error('Invalid request ID');
     const requestId = parsed.data;
 
-    await prisma.loadRequest.deleteMany({ where: { id: requestId, carrierId: actionUserId } });
+    await prisma.loadRequest.updateMany({ 
+      where: { 
+        id: requestId, 
+        carrierId: actionUserId,
+        status: 'PENDING'
+      },
+      data: {
+        status: 'CANCELED'
+      }
+    });
+    
     revalidatePath('/my-loads');
   }
 

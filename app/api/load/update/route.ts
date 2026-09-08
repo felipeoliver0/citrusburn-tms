@@ -37,6 +37,9 @@ export async function POST(req: Request) {
       whereClause.brokerId = userId;
     }
 
+    // P1-17: Restrict load updates to AVAILABLE and OFFERED
+    whereClause.status = { in: ['AVAILABLE', 'OFFERED'] };
+
     const result = await prisma.load.updateMany({
       where: whereClause,
       data: {

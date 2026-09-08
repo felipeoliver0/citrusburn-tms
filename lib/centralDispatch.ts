@@ -58,10 +58,17 @@ export async function postLoadToCentralDispatch(loadDetails: {
   price: number;
   vehiclesData: any;
 }): Promise<{ success: boolean; externalId?: string; error?: string }> {
+  if (process.env.CENTRAL_DISPATCH_MODE !== 'mock') {
+    return {
+      success: false,
+      error: 'Central Dispatch is not fully configured for production. Fail-closed.'
+    };
+  }
+
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 1000));
 
-  console.log('[Central Dispatch] Posting Load:', loadDetails);
+  console.log('[Central Dispatch] Posting Load (MOCK MODE):', loadDetails);
 
   // Simulate success
   return {

@@ -129,30 +129,37 @@ export default function InspectionClient({ loadId, type, origin, dest, initialVi
       const signature = sigCanvas.current?.getTrimmedCanvas().toDataURL('image/png') || '';
       
       const uploadTasks: Promise<{ key: string, url: string }>[] = [];
-      const doUpload = async (key: string, dataUrl: string, filename: string) => {
+      const doUpload = async (key: string, dataUrl: string, filename: string, fileType: string) => {
         const file = dataURLtoBlob(dataUrl);
         const newFile = new File([file], filename, { type: file.type });
         const blob = await upload(filename, newFile, {
           access: 'public',
           handleUploadUrl: '/api/upload',
+          clientPayload: JSON.stringify({ loadId, type: fileType })
         });
         return { key, url: blob.url };
       };
 
       if (vinPhoto) {
-        uploadTasks.push(doUpload('vinPhoto', vinPhoto, `vin-${loadId}.jpeg`));
+        uploadTasks.push(doUpload('vinPhoto', vinPhoto, `vin-${loadId}.jpeg`, 'VIN'));
       }
       
       if (signature) {
-        uploadTasks.push(doUpload('signature', signature, `sig-${loadId}.png`));
+        uploadTasks.push(doUpload('signature', signature, `sig-${loadId}.png`, 'SIGNATURE'));
       }
 
       if (type === 'delivery' && podFileBase64) {
-        uploadTasks.push(doUpload('pod', podFileBase64, `pod-${loadId}.jpeg`));
+        uploadTasks.push(doUpload('pod', podFileBase64, `pod-${loadId}.jpeg`, 'POD'));
       }
 
       vehiclePhotos.forEach((photo, idx) => {
-        uploadTasks.push(doUpload(`vehicle_${idx}`, photo.base64, `vehicle-${loadId}-${idx}.jpeg`));
+        uploadTasks.push(doUpload(`vehicle_${idx}`, photo.base64, `vehicle-${loadId}-${idx}.jpeg`, 'VEHICLE'));
+      });
+
+      damages.forEach((damage, idx) => {
+        if (damage.photo) {
+          uploadTasks.push(doUpload(`damage_${idx}`, damage.photo, `damage-${loadId}-${idx}.jpeg`, 'DAMAGE'));
+        }
       });
 
       const uploadedResults = await Promise.all(uploadTasks);

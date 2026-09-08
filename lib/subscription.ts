@@ -19,7 +19,12 @@ export function isSubscriptionRequired(role: string): boolean {
 export function hasActiveSubscription(user: SubscriptionUser): boolean {
   if (user.role !== 'CARRIER') return true;
 
-  if (user.subscriptionStatus === 'ACTIVE') return true;
+  if (user.subscriptionStatus === 'ACTIVE') {
+    if (user.subscriptionEndsAt && user.subscriptionEndsAt < new Date()) {
+      return false; // Expired
+    }
+    return true;
+  }
 
   if (user.subscriptionStatus === 'TRIAL' && user.trialEndsAt && user.trialEndsAt > new Date()) {
     return true;

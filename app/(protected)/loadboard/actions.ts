@@ -14,7 +14,7 @@ export async function requestLoadAction(loadId: string, bidPrice: number | null)
   }
 
   const parsedLoadId = z.string().uuid().safeParse(loadId);
-  const parsedBid = z.union([z.number().positive(), z.null()]).safeParse(bidPrice);
+  const parsedBid = z.union([z.number().min(0).max(1_000_000), z.null()]).safeParse(bidPrice);
 
   if (!parsedLoadId.success || !parsedBid.success) {
     return { error: 'Invalid input parameters' };

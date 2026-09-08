@@ -86,6 +86,7 @@ export async function processRegistration(data: RegisterFormData): Promise<{ suc
 
     const verificationCode = crypto.randomInt(100000, 1000000).toString();
     const verificationCodeExpiry = new Date(Date.now() + 15 * 60 * 1000);
+    const hashedVerificationCode = await bcrypt.hash(verificationCode, 10);
 
     await prisma.user.create({
       data: {
@@ -95,7 +96,7 @@ export async function processRegistration(data: RegisterFormData): Promise<{ suc
         fullName: fullName,
         companyName: validData.companyName,
         emailVerified: false,
-        verificationCode: verificationCode,
+        verificationCode: hashedVerificationCode,
         verificationCodeExpiry: verificationCodeExpiry,
         
         // Advanced Fields

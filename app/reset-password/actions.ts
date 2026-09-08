@@ -33,7 +33,12 @@ export async function handleResetPassword(formData: FormData) {
     where: { email: email.toLowerCase() }
   });
 
-  if (!user || user.resetPasswordCode !== code) {
+  if (!user || !user.resetPasswordCode) {
+    redirect(`/reset-password?email=${encodeURIComponent(email)}&error=Invalid+recovery+code`);
+  }
+
+  const isCodeValid = await bcrypt.compare(code, user.resetPasswordCode);
+  if (!isCodeValid) {
     redirect(`/reset-password?email=${encodeURIComponent(email)}&error=Invalid+recovery+code`);
   }
 

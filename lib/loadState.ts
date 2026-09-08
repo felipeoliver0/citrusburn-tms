@@ -38,7 +38,7 @@ export async function transitionLoad(
   actorId: string,
   actorRole: Role,
   additionalData: Prisma.LoadUncheckedUpdateInput = {},
-  tx: any = prisma
+  tx: Prisma.TransactionClient | typeof prisma = prisma
 ) {
   // Fetch current state
   const load = await tx.load.findUnique({
@@ -97,6 +97,20 @@ export async function transitionLoad(
   if (result.count !== 1) {
     throw new Error('State transition failed due to a race condition or concurrent update.');
   }
+
+  // P1-03: Add AuditLog
+  await tx.auditLog.create({
+    data: {
+      userId: actorId,
+      action: 'LOAD_STATUS_CHANGED',
+      resourceType: 'Load',
+      resourceId: loadId,
+      details: {
+        from: load.status,
+        to: newStatus,
+      }
+    }
+  });
 
   return true;
 }

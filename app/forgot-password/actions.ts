@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { isRateLimited } from '@/lib/rateLimit';
 import { randomInt } from 'crypto';
+import bcrypt from 'bcryptjs';
 import { Resend } from 'resend';
 import { headers } from 'next/headers';
 
@@ -19,8 +20,12 @@ export async function handleForgotPassword(formData: FormData) {
   const realIp = headersList.get('x-real-ip');
   const ip = realIp || (forwardedFor ? forwardedFor.split(',')[0].trim() : 'unknown');
 
-  // Strict rate limit to prevent spamming
+  // Strict rate limit to prevent spamming (P1-08)
   if (await isRateLimited(`forgot-pw-ip:${ip}`, 5)) {
+    redirect(`/forgot-password?error=Too+many+attempts.+Please+try+again+later.`);
+  }
+
+  if (await isRateLimited(`reset-pw-email:${email.toLowerCase()}`, 5)) {
     redirect(`/forgot-password?error=Too+many+attempts.+Please+try+again+later.`);
   }
 
@@ -37,10 +42,13 @@ export async function handleForgotPassword(formData: FormData) {
   const code = randomInt(100000, 999999).toString();
   const codeExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
+  // P1-07: Hash the code before storing
+  const hashedCode = await bcrypt.hash(code, 10);
+
   await prisma.user.update({
     where: { email: user.email },
     data: {
-      resetPasswordCode: code,
+      resetPasswordCode: hashedCode,
       resetPasswordExpiry: codeExpiry
     }
   });

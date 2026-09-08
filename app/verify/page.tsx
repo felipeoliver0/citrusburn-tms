@@ -5,6 +5,7 @@ import { ArrowRight, ShieldCheck, RefreshCw, Truck } from 'lucide-react';
 import { isRateLimited } from '@/lib/rateLimit';
 import { Resend } from 'resend';
 import { randomInt } from 'crypto';
+import bcrypt from 'bcryptjs';
 
 export default async function Verify({ 
   searchParams 
@@ -42,7 +43,12 @@ export default async function Verify({
       where: { email: userEmail }
     });
 
-    if (!user || user.verificationCode !== code) {
+    if (!user || !user.verificationCode) {
+      redirect(`/verify?email=${encodeURIComponent(userEmail)}&error=Invalid+verification+code`);
+    }
+
+    const isCodeValid = await bcrypt.compare(code, user.verificationCode);
+    if (!isCodeValid) {
       redirect(`/verify?email=${encodeURIComponent(userEmail)}&error=Invalid+verification+code`);
     }
 
@@ -79,10 +85,11 @@ export default async function Verify({
 
     const code = randomInt(100000, 1000000).toString();
     const codeExpiry = new Date(Date.now() + 15 * 60 * 1000);
+    const hashedCode = await bcrypt.hash(code, 10);
 
     await prisma.user.update({
       where: { email: userEmail },
-      data: { verificationCode: code, verificationCodeExpiry: codeExpiry }
+      data: { verificationCode: hashedCode, verificationCodeExpiry: codeExpiry }
     });
 
     if (process.env.RESEND_API_KEY) {
