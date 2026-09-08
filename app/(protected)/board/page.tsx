@@ -13,7 +13,7 @@ export default async function BoardPage() {
   }
 
   // Busca as cargas do Broker logado, ignorando as canceladas (caso existissem)
-  const loads = await prisma.load.findMany({
+  const loadsRaw = await prisma.load.findMany({
     where: { 
       brokerId: session.userId,
       status: { in: ['AVAILABLE', 'BOOKED', 'IN_TRANSIT', 'DELIVERED'] }
@@ -27,6 +27,11 @@ export default async function BoardPage() {
     },
     orderBy: { createdAt: 'desc' }
   });
+
+  const loads = loadsRaw.map(l => ({
+    ...l,
+    price: l.price.toNumber()
+  }));
 
   return (
     <div className="space-y-6 animate-fade-in text-gray-900">

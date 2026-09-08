@@ -43,7 +43,7 @@ export default async function AdminDashboard() {
         const loadDate = new Date(load.createdAt);
         return loadDate.getDate() === d.getDate() && loadDate.getMonth() === d.getMonth();
       })
-      .reduce((sum, load) => sum + load.price, 0);
+      .reduce((sum, load) => sum + load.price.toNumber(), 0);
 
     return {
       date: d.toLocaleDateString('en-US', { weekday: 'short' }),
@@ -57,7 +57,7 @@ export default async function AdminDashboard() {
         <SummaryCard icon={<Users />} label="Total Users" value={totalUsers.toString()} color="text-brand-600" bg="bg-brand-50" border="border-brand-200" />
         <SummaryCard icon={<Package />} label="Active Loads" value={activeLoads.toString()} color="text-amber-600" bg="bg-amber-50" border="border-amber-200" />
         <SummaryCard icon={<Truck />} label="Loads Delivered" value={totalDelivered.toString()} color="text-emerald-600" bg="bg-emerald-50" border="border-emerald-200" />
-        <SummaryCard icon={<Activity />} label="Total Volume ($)" value={`$${revenueData._sum.price?.toLocaleString() || '0'}`} color="text-purple-600" bg="bg-purple-50" border="border-purple-200" />
+        <SummaryCard icon={<Activity />} label="Total Volume ($)" value={`$${revenueData._sum.price?.toNumber().toLocaleString() || '0'}`} color="text-purple-600" bg="bg-purple-50" border="border-purple-200" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

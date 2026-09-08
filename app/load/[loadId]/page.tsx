@@ -64,7 +64,7 @@ export default async function LoadMap({
             <span className="bg-brand-500/10 text-brand-500 border border-brand-500/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
               {load.status}
             </span>
-            <span className="text-xl font-bold text-brand-600">${load.price}</span>
+            <span className="text-xl font-bold text-brand-600">${load.price.toNumber()}</span>
           </div>
 
           <div className="space-y-3 text-sm">

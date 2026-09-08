@@ -107,7 +107,7 @@ export default async function Loadboard({ searchParams }: { searchParams: Promis
         where: { status: 'AVAILABLE', ...(conditions.length > 0 ? { AND: conditions } : {}) }
       });
 
-      const loads = await prisma.load.findMany({
+      const loadsRaw = await prisma.load.findMany({
         where: { status: 'AVAILABLE', ...(conditions.length > 0 ? { AND: conditions } : {}) },
         select: {
           id: true,
@@ -134,6 +134,15 @@ export default async function Loadboard({ searchParams }: { searchParams: Promis
         take: pageSize,
         skip: (pageNum - 1) * pageSize,
       });
+
+      const loads = loadsRaw.map(l => ({
+        ...l,
+        price: l.price.toNumber(),
+        requests: l.requests.map(r => ({
+          ...r,
+          bidPrice: r.bidPrice ? r.bidPrice.toNumber() : null
+        }))
+      }));
 
       return { count, loads };
     },

@@ -38,7 +38,7 @@ export default async function CarrierDashboard({ userId }: { userId: string }) {
   const routesMap = new Map<string, number>();
   for (const load of routesDataRaw) {
     const routeName = `${load.originCity} \u2192 ${load.destCity}`;
-    routesMap.set(routeName, (routesMap.get(routeName) || 0) + load.price);
+    routesMap.set(routeName, (routesMap.get(routeName) || 0) + load.price.toNumber());
   }
   const topRoutesData = Array.from(routesMap.entries())
     .map(([route, revenue]) => ({ route, revenue }))
@@ -54,7 +54,7 @@ export default async function CarrierDashboard({ userId }: { userId: string }) {
         const loadDate = new Date(load.createdAt);
         return loadDate.getDate() === d.getDate() && loadDate.getMonth() === d.getMonth();
       })
-      .reduce((sum, load) => sum + load.price, 0);
+      .reduce((sum, load) => sum + load.price.toNumber(), 0);
 
     return {
       date: d.toLocaleDateString('en-US', { weekday: 'short' }),
@@ -69,7 +69,7 @@ export default async function CarrierDashboard({ userId }: { userId: string }) {
         <SummaryCard icon={<Truck />} label="Active Loads" value={activeLoads.toString()} color="text-brand-600" bg="bg-brand-50" border="border-brand-200" />
         <SummaryCard icon={<MapPin />} label="Completed Deliveries" value={completedLoads.toString()} color="text-emerald-600" bg="bg-emerald-50" border="border-emerald-200" />
         <SummaryCard icon={<Users />} label="Avg Deliveries / Driver" value={avgDriverLoads.toFixed(1)} color="text-amber-600" bg="bg-amber-50" border="border-amber-200" />
-        <SummaryCard icon={<DollarSign />} label="Total Revenue" value={`$${revenueData._sum.price?.toLocaleString() || '0'}`} color="text-purple-600" bg="bg-purple-50" border="border-purple-200" />
+        <SummaryCard icon={<DollarSign />} label="Total Revenue" value={`$${revenueData._sum.price?.toNumber().toLocaleString() || '0'}`} color="text-purple-600" bg="bg-purple-50" border="border-purple-200" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -130,7 +130,7 @@ export default async function CarrierDashboard({ userId }: { userId: string }) {
                     <div className="text-sm text-gray-500 mt-1">Broker: {load.broker?.companyName || 'Unknown'}</div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-emerald-600">${load.price}</div>
+                    <div className="font-bold text-emerald-600">${load.price.toNumber()}</div>
                     <div className="text-xs mt-1 uppercase font-bold tracking-wider text-gray-500">{load.status}</div>
                   </div>
                 </div>

@@ -152,7 +152,7 @@ model Load {
   destZip        String
   destCity       String
   destAddress    String?
-  price          Float
+  price          Decimal       @db.Decimal(12, 2)
   distance       Float         
   status         LoadStatus    @default(AVAILABLE)
   
@@ -219,7 +219,7 @@ model LoadRequest {
   carrierId String
   carrier   User          @relation(fields: [carrierId], references: [id], onDelete: Cascade)
   status    RequestStatus @default(PENDING)
-  bidPrice  Float?
+  bidPrice  Decimal?      @db.Decimal(12, 2)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @default(now()) @updatedAt
 

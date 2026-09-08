@@ -43,7 +43,7 @@ export default async function BrokerDashboard({ userId }: { userId: string }) {
   let avgPricePerMile = 0;
   if (allDeliveredLoads.length > 0) {
     const totalDistance = allDeliveredLoads.reduce((sum, load) => sum + load.distance, 0);
-    const totalPrice = allDeliveredLoads.reduce((sum, load) => sum + load.price, 0);
+    const totalPrice = allDeliveredLoads.reduce((sum, load) => sum + load.price.toNumber(), 0);
     avgPricePerMile = totalDistance > 0 ? totalPrice / totalDistance : 0;
   }
 
@@ -52,7 +52,7 @@ export default async function BrokerDashboard({ userId }: { userId: string }) {
   const routesMap = new Map<string, number>();
   for (const load of routesDataRaw) {
     const routeName = `${load.originCity} \u2192 ${load.destCity}`;
-    routesMap.set(routeName, (routesMap.get(routeName) || 0) + load.price);
+    routesMap.set(routeName, (routesMap.get(routeName) || 0) + load.price.toNumber());
   }
   const topRoutesData = Array.from(routesMap.entries())
     .map(([route, revenue]) => ({ route, revenue }))
@@ -68,7 +68,7 @@ export default async function BrokerDashboard({ userId }: { userId: string }) {
         const loadDate = new Date(load.createdAt);
         return loadDate.getDate() === d.getDate() && loadDate.getMonth() === d.getMonth();
       })
-      .reduce((sum, load) => sum + load.price, 0);
+      .reduce((sum, load) => sum + load.price.toNumber(), 0);
 
     return {
       date: d.toLocaleDateString('en-US', { weekday: 'short' }),
@@ -167,7 +167,7 @@ export default async function BrokerDashboard({ userId }: { userId: string }) {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-gray-700">${load.price}</div>
+                    <div className="font-bold text-gray-700">${load.price.toNumber()}</div>
                     <div className="text-xs mt-1 uppercase font-bold tracking-wider text-gray-500">{load.status}</div>
                   </div>
                 </div>

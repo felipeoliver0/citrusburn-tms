@@ -54,7 +54,7 @@ export default async function BrokerRequests() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {requests.map((req) => {
-            const isCounterOffer = req.bidPrice && req.bidPrice !== req.load.price;
+            const isCounterOffer = req.bidPrice && req.bidPrice.toNumber() !== req.load.price.toNumber();
             
             return (
             <div key={req.id} className="bg-white border border-gray-200 rounded-[2rem] p-6 shadow-sm hover:shadow-xl transition-all duration-300 relative overflow-hidden flex flex-col group">
@@ -97,7 +97,7 @@ export default async function BrokerRequests() {
                   </span>
                   <span className={`text-2xl font-black flex items-center ${isCounterOffer ? 'text-amber-600' : 'text-gray-900'}`}>
                     <DollarSign size={20} className="mr-0.5 opacity-80" />
-                    {(req.bidPrice || req.load.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {(req.bidPrice?.toNumber() || req.load.price.toNumber()).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>

@@ -331,7 +331,7 @@ export default async function MyLoads(props: { searchParams: Promise<{ [key: str
                       <div className="flex items-center gap-3">
                         <span className="font-black text-lg text-brand-400 tracking-tight">#{req.load.id.substring(0, 8).toUpperCase()}</span>
                         <span className="bg-brand-500/10 text-brand-400 border border-brand-500/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">Awaiting Broker</span>
-                        {req.bidPrice && <span className="bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1 rounded-full text-[10px] font-bold">My Bid: ${req.bidPrice}</span>}
+                        {req.bidPrice && <span className="bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1 rounded-full text-[10px] font-bold">My Bid: ${req.bidPrice.toNumber()}</span>}
                       </div>
                       <form action={handleCancelRequest}>
                         <input type="hidden" name="requestId" value={req.id} />
@@ -355,7 +355,7 @@ export default async function MyLoads(props: { searchParams: Promise<{ [key: str
                       </div>
                       <div>
                         <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Load Price</div>
-                        <div className="font-bold text-gray-900">${req.load.price.toFixed(2)}</div>
+                        <div className="font-bold text-gray-900">${req.load.price.toNumber().toFixed(2)}</div>
                       </div>
                     </div>
                   </div>
@@ -438,7 +438,7 @@ export default async function MyLoads(props: { searchParams: Promise<{ [key: str
 
                     <div>
                       <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Load Info</div>
-                      <div className="text-xl font-black text-gray-900">${load.price.toFixed(2)} <span className="text-[10px] font-normal text-gray-500 uppercase">| {load.paymentType}</span></div>
+                      <div className="text-xl font-black text-gray-900">${load.price.toNumber().toFixed(2)} <span className="text-[10px] font-normal text-gray-500 uppercase">| {load.paymentType}</span></div>
                       
                       <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mt-5 mb-1">Vehicle Info</div>
                       <div className="text-sm font-bold text-gray-900">
@@ -546,7 +546,7 @@ export default async function MyLoads(props: { searchParams: Promise<{ [key: str
                               date: new Date().toLocaleDateString(), 
                               origin: load.originCity, 
                               destination: load.destCity, 
-                              price: load.price, 
+                              price: load.price.toNumber(), 
                               vin: load.deliveryVin || 'Unknown', 
                               brokerCompany: load.broker.companyName || 'Unknown Broker', 
                               brokerAddress: load.broker.companyAddress || undefined,
