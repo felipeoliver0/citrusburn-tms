@@ -40,7 +40,8 @@ export async function isRateLimited(key: string, maxRequests: number): Promise<b
       // Fall through to memory logic
     }
   } else if (process.env.NODE_ENV === 'production') {
-    console.warn('WARNING: Redis is not configured. Rate limiting will fall back to in-memory which is ineffective across serverless functions.');
+    console.error('CRITICAL: Redis is not configured in production. Rate limiting would be ineffective across serverless functions.');
+    throw new Error('Redis is required for rate limiting in production');
   }
 
   // Fallback memory logic (development only)
