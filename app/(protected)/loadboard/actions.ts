@@ -36,6 +36,27 @@ export async function requestLoadAction(loadId: string, bidPrice: number | null)
     };
   }
 
+  const load = await prisma.load.findUnique({
+    where: { id: loadId },
+    select: {
+      id: true,
+      status: true,
+      brokerId: true,
+    },
+  });
+
+  if (!load) {
+    return { error: 'Load not found' };
+  }
+
+  if (load.status !== 'AVAILABLE') {
+    return { error: 'This load is no longer available' };
+  }
+
+  if (load.brokerId === actionUserId) {
+    return { error: 'You cannot request your own load' };
+  }
+
   try {
     const activeRequest = await prisma.loadRequest.findFirst({
       where: { loadId, carrierId: actionUserId, status: 'PENDING' }
