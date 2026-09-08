@@ -9,22 +9,12 @@ import { randomInt } from 'crypto';
 export default async function Verify({ 
   searchParams 
 }: { 
-  searchParams: Promise<{ email?: string; error?: string }> 
+  searchParams: Promise<{ email?: string; error?: string; success?: string }> 
 }) {
   const resolvedParams = await searchParams;
   const email = resolvedParams.email || '';
   const error = resolvedParams.error || '';
-  const success = '';
-
-  if (email) {
-    await prisma.user.updateMany({
-      where: { email },
-      data: { emailVerified: true }
-    });
-    redirect('/login?verified=true');
-  } else {
-    redirect('/login');
-  }
+  const success = resolvedParams.success || '';
 
   async function handleVerifyCode(formData: FormData) {
     'use server';
@@ -40,12 +30,12 @@ export default async function Verify({
 
     // Rate limit check: 20 attempts per IP to prevent brute-forcing the 6-digit code across accounts
     if (await isRateLimited(`verify-ip:${ip}`, 20)) {
-      redirect(`/verify?email=${userEmail}&error=Too+many+attempts.+Please+try+again+later.`);
+      redirect(`/verify?email=${encodeURIComponent(userEmail)}&error=Too+many+attempts.+Please+try+again+later.`);
     }
 
     // Rate limit check: 5 attempts per email to prevent brute-forcing the 6-digit code
     if (await isRateLimited(`verify-email:${userEmail}`, 5)) {
-      redirect(`/verify?email=${userEmail}&error=Too+many+attempts.+Please+try+again+later.`);
+      redirect(`/verify?email=${encodeURIComponent(userEmail)}&error=Too+many+attempts.+Please+try+again+later.`);
     }
 
     const user = await prisma.user.findUnique({
@@ -53,19 +43,20 @@ export default async function Verify({
     });
 
     if (!user || user.verificationCode !== code) {
-      redirect(`/verify?email=${userEmail}&error=Invalid+verification+code`);
+      redirect(`/verify?email=${encodeURIComponent(userEmail)}&error=Invalid+verification+code`);
     }
 
     // Check if code has expired
-    if (user.verificationCodeExpiry && new Date() > new Date(user.verificationCodeExpiry)) {
-      redirect(`/verify?email=${userEmail}&error=Code+expired.+Please+request+a+new+one.`);
+    if (!user.verificationCodeExpiry || new Date() > new Date(user.verificationCodeExpiry)) {
+      redirect(`/verify?email=${encodeURIComponent(userEmail)}&error=Code+expired.+Please+request+a+new+one.`);
     }
 
     await prisma.user.update({
       where: { email: userEmail },
       data: {
         emailVerified: true,
-        verificationCode: null
+        verificationCode: null,
+        verificationCodeExpiry: null
       }
     });
 
@@ -78,7 +69,7 @@ export default async function Verify({
     const userEmail = formData.get('email') as string;
 
     if (await isRateLimited(`resend-email:${userEmail}`, 3)) {
-      redirect(`/verify?email=${userEmail}&error=Too+many+resend+attempts.+Please+wait+a+while.`);
+      redirect(`/verify?email=${encodeURIComponent(userEmail)}&error=Too+many+resend+attempts.+Please+wait+a+while.`);
     }
 
     const user = await prisma.user.findUnique({ where: { email: userEmail } });
@@ -86,8 +77,8 @@ export default async function Verify({
       redirect(`/login`);
     }
 
-    const code = randomInt(100000, 999999).toString();
-    const codeExpiry = new Date(Date.now() + 30 * 60 * 1000);
+    const code = randomInt(100000, 1000000).toString();
+    const codeExpiry = new Date(Date.now() + 15 * 60 * 1000);
 
     await prisma.user.update({
       where: { email: userEmail },
@@ -95,32 +86,36 @@ export default async function Verify({
     });
 
     if (process.env.RESEND_API_KEY) {
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({
-        from: 'AxleGrid <noreply@axlegrid.com>',
-        to: userEmail,
-        subject: 'Your new verification code - AxleGrid',
-        html: `
-          <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-w: 600px; margin: 0 auto; background-color: #f8fafc; padding: 40px 20px;">
-            <div style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
-              <div style="background-color: #09090b; padding: 30px; text-align: center;">
-                <div style="display: inline-block; width: 48px; height: 48px; background-color: #2563eb; color: #ffffff; border-radius: 12px; font-size: 24px; font-weight: bold; line-height: 48px; margin-bottom: 12px;">A</div>
-                <h1 style="color: #ffffff; font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -0.5px;">AxleGrid</h1>
-              </div>
-              <div style="padding: 40px 30px;">
-                <h2 style="color: #0f172a; font-size: 20px; margin-top: 0; margin-bottom: 16px; font-weight: 700;">Hello!</h2>
-                <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-top: 0; margin-bottom: 24px;">You requested a new verification code. Please use the code below:</p>
-                <div style="background-color: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 30px;">
-                  <span style="font-family: monospace; font-size: 40px; font-weight: 800; letter-spacing: 8px; color: #0f172a;">${code}</span>
+      try {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+          from: 'AxleGrid <noreply@axlegrid.com>',
+          to: userEmail,
+          subject: 'Your new verification code - AxleGrid',
+          html: `
+            <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 40px 20px;">
+              <div style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+                <div style="background-color: #09090b; padding: 30px; text-align: center;">
+                  <div style="display: inline-block; width: 48px; height: 48px; background-color: #2563eb; color: #ffffff; border-radius: 12px; font-size: 24px; font-weight: bold; line-height: 48px; margin-bottom: 12px;">A</div>
+                  <h1 style="color: #ffffff; font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -0.5px;">AxleGrid</h1>
+                </div>
+                <div style="padding: 40px 30px;">
+                  <h2 style="color: #0f172a; font-size: 20px; margin-top: 0; margin-bottom: 16px; font-weight: 700;">Hello!</h2>
+                  <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-top: 0; margin-bottom: 24px;">You requested a new verification code. Please use the code below (valid for 15 minutes):</p>
+                  <div style="background-color: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 30px;">
+                    <span style="font-family: monospace; font-size: 40px; font-weight: 800; letter-spacing: 8px; color: #0f172a;">${code}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        `
-      });
+          `
+        });
+      } catch (emailErr) {
+        console.error('Failed to resend verification email:', emailErr);
+      }
     }
 
-    redirect(`/verify?email=${userEmail}&success=A+new+code+has+been+sent+to+your+email`);
+    redirect(`/verify?email=${encodeURIComponent(userEmail)}&success=A+new+code+has+been+sent+to+your+email`);
   }
 
   return (

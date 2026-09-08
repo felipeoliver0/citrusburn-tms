@@ -4,9 +4,10 @@ import prisma from '@/lib/prisma';
 import { hashPassword } from '@/lib/hash';
 import { z } from 'zod';
 import { getTrialEndDate } from '@/lib/subscription';
-import { headers, cookies } from 'next/headers';
+import { headers } from 'next/headers';
 import { isRateLimited } from '@/lib/rateLimit';
-import { signToken } from '@/lib/auth';
+import crypto from 'crypto';
+import { Resend } from 'resend';
 
 // Relaxed validation schema to allow optional fields
 const AdvancedRegisterSchema = z.object({
@@ -83,16 +84,19 @@ export async function processRegistration(data: RegisterFormData): Promise<{ suc
       fullName = `${validData.ownerFirstName || ''} ${validData.ownerLastName || ''}`.trim();
     }
 
-    const user = await prisma.user.create({
+    const verificationCode = crypto.randomInt(100000, 1000000).toString();
+    const verificationCodeExpiry = new Date(Date.now() + 15 * 60 * 1000);
+
+    await prisma.user.create({
       data: {
         email: validData.email,
         passwordHash: hashedPassword,
         role: validData.role,
         fullName: fullName,
         companyName: validData.companyName,
-        emailVerified: true,
-        verificationCode: null,
-        verificationCodeExpiry: null,
+        emailVerified: false,
+        verificationCode: verificationCode,
+        verificationCodeExpiry: verificationCodeExpiry,
         
         // Advanced Fields
         companyAddress: validData.companyAddress,
@@ -116,20 +120,37 @@ export async function processRegistration(data: RegisterFormData): Promise<{ suc
       },
     });
 
-    // Auto-login newly registered user
-    const token = await signToken({ userId: user.id, role: user.role, onboardingCompleted: user.onboardingCompleted });
-    const cookieStore = await cookies();
-    
-    cookieStore.delete('userId');
-    cookieStore.set('auth_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7200, // 2 hours
-      path: '/'
-    });
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+          from: 'AxleGrid <noreply@axlegrid.com>',
+          to: validData.email,
+          subject: 'Verify your email - AxleGrid',
+          html: `
+            <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 40px 20px;">
+              <div style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+                <div style="background-color: #09090b; padding: 30px; text-align: center;">
+                  <div style="display: inline-block; width: 48px; height: 48px; background-color: #2563eb; color: #ffffff; border-radius: 12px; font-size: 24px; font-weight: bold; line-height: 48px; margin-bottom: 12px;">A</div>
+                  <h1 style="color: #ffffff; font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -0.5px;">AxleGrid</h1>
+                </div>
+                <div style="padding: 40px 30px;">
+                  <h2 style="color: #0f172a; font-size: 20px; margin-top: 0; margin-bottom: 16px; font-weight: 700;">Welcome, ${fullName}!</h2>
+                  <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-top: 0; margin-bottom: 24px;">Thanks for registering. Please use the code below to verify your email address (valid for 15 minutes):</p>
+                  <div style="background-color: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 30px;">
+                    <span style="font-family: monospace; font-size: 40px; font-weight: 800; letter-spacing: 8px; color: #0f172a;">${verificationCode}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `
+        });
+      } catch (emailErr) {
+        console.error('Failed to send verification email:', emailErr);
+      }
+    }
 
-    return { success: true, redirectUrl: '/dashboard' };
+    return { success: true };
     
   } catch (error: any) {
     if (error?.code === 'P2002') {

@@ -55,12 +55,8 @@ export default async function Login({
       redirect('/login?error=Invalid+email+or+password');
     }
 
-    // Auto-verify account if not yet verified
     if (!user.emailVerified) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { emailVerified: true }
-      });
+      redirect(`/verify?email=${encodeURIComponent(user.email)}&error=Please+verify+your+email`);
     }
 
     const token = await signToken({ userId: user.id, role: user.role, onboardingCompleted: user.onboardingCompleted });
