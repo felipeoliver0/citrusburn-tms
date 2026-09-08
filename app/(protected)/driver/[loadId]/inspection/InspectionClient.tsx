@@ -6,9 +6,23 @@ import SignatureCanvas from 'react-signature-canvas';
 import DamageMarker, { DamageMarkerData } from '@/app/components/DamageMarker';
 import { submitInspectionAction } from '../../actions';
 import { Camera, CheckCircle2, ChevronRight, MapPin, Target, ShieldAlert, PenTool, Image as ImageIcon } from 'lucide-react';
+import { upload } from '@vercel/blob/client';
 import { compressImage } from '@/lib/imageUtils';
 import { saveInspectionDraft, loadInspectionDraft, clearInspectionDraft } from '@/lib/offlineStorage';
 import { toast } from 'react-hot-toast';
+
+// Helper to convert base64 to Blob
+function dataURLtoBlob(dataurl: string) {
+  const arr = dataurl.split(',');
+  const mime = arr[0].match(/:(.*?);/)?.[1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: mime });
+}
 
 interface InspectionClientProps {
   loadId: string;
@@ -113,16 +127,53 @@ export default function InspectionClient({ loadId, type, origin, dest, initialVi
     setIsSubmitting(true);
     try {
       const signature = sigCanvas.current?.getTrimmedCanvas().toDataURL('image/png') || '';
+      
+      const uploadTasks: Promise<{ key: string, url: string }>[] = [];
+      const doUpload = async (key: string, dataUrl: string, filename: string) => {
+        const file = dataURLtoBlob(dataUrl);
+        const newFile = new File([file], filename, { type: file.type });
+        const blob = await upload(filename, newFile, {
+          access: 'public',
+          handleUploadUrl: '/api/upload',
+        });
+        return { key, url: blob.url };
+      };
+
+      if (vinPhoto) {
+        uploadTasks.push(doUpload('vinPhoto', vinPhoto, `vin-${loadId}.jpeg`));
+      }
+      
+      if (signature) {
+        uploadTasks.push(doUpload('signature', signature, `sig-${loadId}.png`));
+      }
+
+      if (type === 'delivery' && podFileBase64) {
+        uploadTasks.push(doUpload('pod', podFileBase64, `pod-${loadId}.jpeg`));
+      }
+
+      vehiclePhotos.forEach((photo, idx) => {
+        uploadTasks.push(doUpload(`vehicle_${idx}`, photo.base64, `vehicle-${loadId}-${idx}.jpeg`));
+      });
+
+      const uploadedResults = await Promise.all(uploadTasks);
+      const urlMap: Record<string, string> = {};
+      uploadedResults.forEach(res => urlMap[res.key] = res.url);
+
+      const finalVehiclePhotos = vehiclePhotos.map((photo, idx) => ({
+        part: photo.part,
+        base64: urlMap[`vehicle_${idx}`] || photo.base64
+      }));
+
       const formData = new FormData();
       formData.append('loadId', loadId);
       formData.append('type', type);
       formData.append('vin', vin);
-      formData.append('vinPhoto', vinPhoto);
+      formData.append('vinPhoto', urlMap['vinPhoto'] || '');
       formData.append('damages', JSON.stringify(damages));
-      formData.append('vehiclePhotos', JSON.stringify(vehiclePhotos));
-      formData.append('signature', signature);
-      if (type === 'delivery' && podFileBase64) {
-        formData.append('podBase64', podFileBase64);
+      formData.append('vehiclePhotos', JSON.stringify(finalVehiclePhotos));
+      formData.append('signature', urlMap['signature'] || '');
+      if (type === 'delivery' && urlMap['pod']) {
+        formData.append('podBase64', urlMap['pod']);
       }
 
       await submitInspectionAction(formData);

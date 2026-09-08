@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/dal';
 import { createNotification } from '@/lib/notifications';
 import { SubmitInspectionSchema } from '@/lib/validations';
-import { uploadBase64ToBlob, deleteBlob } from '@/lib/blobStorage';
+import { deleteBlob } from '@/lib/blobStorage';
 import { transitionLoad } from '@/lib/loadState';
 import { Role } from '@prisma/client';
 
@@ -77,68 +77,30 @@ export async function submitInspectionAction(formData: FormData) {
     }
   }
 
-  // PHASE 1: Storage Uploads
-  const uploadPromises: { id: string; promise: Promise<string | null> }[] = [];
-
-  if (vinPhoto) {
-    uploadPromises.push({ id: 'vinPhoto', promise: uploadBase64ToBlob(vinPhoto, `vin-${loadId}`) });
-  }
-  if (signature) {
-    uploadPromises.push({ id: 'signature', promise: uploadBase64ToBlob(signature, `sig-${loadId}`) });
-  }
-  if (podBase64) {
-    uploadPromises.push({ id: 'pod', promise: uploadBase64ToBlob(podBase64, `pod-${loadId}`) });
-  }
-  for (let i = 0; i < damages.length; i++) {
-    if (damages[i].photo) {
-      uploadPromises.push({ id: `damage_${i}`, promise: uploadBase64ToBlob(damages[i].photo, `damage-${loadId}-${i}`) });
-    }
-  }
-  for (let i = 0; i < vehiclePhotos.length; i++) {
-    if (vehiclePhotos[i].base64) {
-      uploadPromises.push({ id: `vehicle_${i}`, promise: uploadBase64ToBlob(vehiclePhotos[i].base64, `vehicle-${loadId}-${i}`) });
-    }
-  }
-
-  const results = await Promise.allSettled(uploadPromises.map(u => u.promise));
-  
-  const hasFailures = results.some(r => r.status === 'rejected');
-  
+  // Phase 1 is now handled by the client-side Vercel Blob SDK
+  // We just extract the uploaded URLs from the payload for rollback purposes
   const successfulUrls: string[] = [];
-  results.forEach(r => {
-    if (r.status === 'fulfilled' && r.value) {
-      successfulUrls.push(r.value);
-    }
-  });
 
-  if (hasFailures) {
-    // Cleanup successful uploads
-    await Promise.allSettled(successfulUrls.map(url => deleteBlob(url)));
-    throw new Error('Failed to upload some inspection images. Please try again.');
+  const uploadedVinPhoto = vinPhoto && vinPhoto.startsWith('http') ? vinPhoto : null;
+  if (uploadedVinPhoto) successfulUrls.push(uploadedVinPhoto);
+
+  const uploadedSignature = signature && signature.startsWith('http') ? signature : null;
+  if (uploadedSignature) successfulUrls.push(uploadedSignature);
+
+  const uploadedPod = podBase64 && podBase64.startsWith('http') ? podBase64 : null;
+  if (uploadedPod) successfulUrls.push(uploadedPod);
+
+  for (let i = 0; i < damages.length; i++) {
+    if (damages[i].photo && damages[i].photo.startsWith('http')) {
+      successfulUrls.push(damages[i].photo);
+    }
   }
 
-  // Map results back
-  let uploadedVinPhoto: string | null = null;
-  let uploadedSignature: string | null = null;
-  let uploadedPod: string | null = null;
-
-  results.forEach((r, idx) => {
-    if (r.status === 'fulfilled') {
-      const id = uploadPromises[idx].id;
-      const val = r.value;
-      if (id === 'vinPhoto') uploadedVinPhoto = val;
-      else if (id === 'signature') uploadedSignature = val;
-      else if (id === 'pod') uploadedPod = val;
-      else if (id.startsWith('damage_')) {
-        const i = parseInt(id.split('_')[1]);
-        damages[i].photo = val;
-      }
-      else if (id.startsWith('vehicle_')) {
-        const i = parseInt(id.split('_')[1]);
-        vehiclePhotos[i].base64 = val;
-      }
+  for (let i = 0; i < vehiclePhotos.length; i++) {
+    if (vehiclePhotos[i].base64 && vehiclePhotos[i].base64.startsWith('http')) {
+      successfulUrls.push(vehiclePhotos[i].base64);
     }
-  });
+  }
 
   // PHASE 2: Database Transaction
   const inspectionType = type === 'pickup' ? 'PICKUP' : 'DELIVERY';
