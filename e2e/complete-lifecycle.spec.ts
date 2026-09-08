@@ -84,40 +84,78 @@ test.describe('E2E Marketplace Flow', () => {
     await brokerPage.fill('input[placeholder*="Year, Make, Model"]', '2024 Tesla Model 3');
     await brokerPage.click('button:has-text("Publish Load")');
     await expect(brokerPage).toHaveURL(/.*\/loadboard/);
-
-    // Get the created load (Wait for it to appear on loadboard)
     await brokerPage.waitForSelector('text=Miami 33101');
 
     // 4. Carrier finds and requests load
     await carrierPage.goto('/loadboard');
     await carrierPage.locator('input[placeholder="City or Zip"]').first().fill('Miami');
     await carrierPage.keyboard.press('Enter');
-    await carrierPage.waitForTimeout(2000); // Give it time to debounce/fetch
-
-    // Click the load details
-    await carrierPage.click('text=Miami 33101'); // Should open modal or navigate
+    await carrierPage.waitForTimeout(2000);
+    await carrierPage.click('text=Miami 33101');
     
-    // Check if it's a modal or navigation. The UI has a "View Details" button usually.
-    // We'll click the first "Request Load" or "View Details" button
     const requestBtn = carrierPage.locator('button:has-text("Request Load"), button:has-text("REQUEST LOAD")').first();
     await requestBtn.click();
-
-    // If it opens a modal, click "Submit Request"
     const submitRequestBtn = carrierPage.locator('button:has-text("Submit Request")');
-    if (await submitRequestBtn.isVisible()) {
-        await submitRequestBtn.click();
-    }
+    if (await submitRequestBtn.isVisible()) await submitRequestBtn.click();
 
     // 5. Broker approves the request
     await brokerPage.goto('/broker-requests');
     await brokerPage.click('button:has-text("Approve")'); 
+    await expect(brokerPage.locator('text=Approved').first()).toBeVisible({ timeout: 10000 });
 
-    // 6. Carrier starts pickup
+    // 6. Carrier assigns driver (self or fleet) - going to My Loads to assign
+    await carrierPage.goto('/my-loads');
+    // Assuming UI lets you assign from my-loads
+    const assignBtn = carrierPage.locator('button:has-text("Assign Driver")').first();
+    if (await assignBtn.isVisible()) {
+        await assignBtn.click();
+        // Select themselves if possible, or another driver
+        await carrierPage.locator('select').first().selectOption({ index: 1 });
+        await carrierPage.click('button:has-text("Confirm Assignment")');
+    }
+
+    // 7. Driver (Carrier acting as driver here) starts pickup
     await carrierPage.goto('/driver');
-    await carrierPage.click('text=Start Pickup Inspection'); // Or similar action
+    await expect(carrierPage.locator('text=Miami 33101')).toBeVisible();
     
-    // We stop the test here as it proves the core marketplace connection
-    expect(true).toBe(true);
+    const startPickupBtn = carrierPage.locator('button:has-text("Start Pickup Inspection"), a:has-text("Start Pickup Inspection")').first();
+    if (await startPickupBtn.isVisible()) {
+      await startPickupBtn.click();
+      await carrierPage.click('button:has-text("Confirm Pickup")');
+    }
+
+    await expect(carrierPage.locator('text=In Transit').first()).toBeVisible({ timeout: 10000 });
+
+    // 8. GPS / Transit is assumed running while status is IN_TRANSIT
+    // We can simulate updating location via API if needed, or simply proceed to delivery
+
+    // 9. Driver delivery & POD
+    const completeDeliveryBtn = carrierPage.locator('button:has-text("Complete Delivery"), a:has-text("Complete Delivery")').first();
+    if (await completeDeliveryBtn.isVisible()) {
+      await completeDeliveryBtn.click();
+      // Assume POD upload happens here if required
+      await carrierPage.click('button:has-text("Confirm Delivery")');
+    }
+
+    await expect(carrierPage.locator('text=Delivered').first()).toBeVisible({ timeout: 10000 });
+
+    // 10. Invoice (Broker marks as Invoiced)
+    await brokerPage.goto('/board'); // Broker view of their loads
+    await brokerPage.click('text=Miami 33101'); // open details
+    const invoiceBtn = brokerPage.locator('button:has-text("Generate Invoice"), button:has-text("Mark as Invoiced")');
+    if (await invoiceBtn.isVisible()) {
+        await invoiceBtn.click();
+        await expect(brokerPage.locator('text=Invoiced').first()).toBeVisible({ timeout: 10000 });
+    }
+
+    // 11. Review
+    // Optionally leave a review
+    const reviewBtn = carrierPage.locator('button:has-text("Leave Review")');
+    if (await reviewBtn.isVisible()) {
+        await reviewBtn.click();
+        await carrierPage.locator('textarea').fill('Great broker!');
+        await carrierPage.click('button:has-text("Submit Review")');
+    }
 
     await brokerContext.close();
     await carrierContext.close();
