@@ -49,7 +49,9 @@ export default function Sidebar({ userRole }: { userRole: string }) {
         </button>
         <div className={`p-6 flex items-center ${isCollapsed ? 'md:justify-center md:px-0' : 'gap-3'}`}>
         <Link href={userRole === 'DRIVER' ? '/driver' : '/dashboard'} className="flex items-center gap-3">
-          <div className="w-8 h-8 shrink-0 bg-gradient-to-br from-brand-500 to-brand-700 rounded-lg flex items-center justify-center font-bold shadow-md shadow-brand-500/20 text-white">A</div>
+          <div className="w-8 h-8 shrink-0 bg-gradient-to-br from-brand-500 to-brand-700 rounded-lg flex items-center justify-center shadow-md shadow-brand-500/20">
+            <Truck size={16} className="text-white" />
+          </div>
           <span className={`font-bold text-xl tracking-tight text-white truncate ${isCollapsed ? 'md:hidden' : ''}`}>AxleGrid</span>
         </Link>
       </div>
