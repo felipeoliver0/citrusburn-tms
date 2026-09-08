@@ -34,7 +34,10 @@ export async function resetUserPassword(formData: FormData) {
       }
     });
 
-    await logAudit(userId, 'ADMIN_PASSWORD_RESET', 'User', targetUserId);
+    await logAudit(userId, 'ADMIN_PASSWORD_RESET', 'User', targetUserId, {
+      action: 'ADMIN_PASSWORD_RESET',
+      targetUserId
+    });
 
     revalidatePath('/admin/users');
     return { success: 'Password updated successfully!' };
@@ -65,9 +68,12 @@ export async function deleteUser(formData: FormData) {
   }
 
   try {
-    await prisma.user.delete({
-      where: { id: targetUserId }
+    await prisma.user.update({
+      where: { id: targetUserId },
+      data: { deletedAt: new Date() }
     });
+
+    await logAudit(userId, 'ADMIN_USER_SOFT_DELETE', 'User', targetUserId);
 
     revalidatePath('/admin/users');
     return { success: 'User deleted successfully.' };
@@ -92,9 +98,21 @@ export async function updateUserRole(formData: FormData) {
   const newRole = parsedRole.data;
 
   try {
+    const target = await prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { role: true }
+    });
+
+    if (!target) return { error: 'User not found' };
+
     await prisma.user.update({
       where: { id: targetUserId },
       data: { role: newRole }
+    });
+
+    await logAudit(userId, 'ADMIN_ROLE_CHANGED', 'User', targetUserId, {
+      oldRole: target.role,
+      newRole,
     });
 
     revalidatePath('/admin/users');
