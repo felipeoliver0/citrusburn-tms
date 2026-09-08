@@ -25,13 +25,27 @@ export async function approveRequestAction(formData: FormData) {
   if (!request) throw new Error('Request not found');
   if (request.load.brokerId !== userId) throw new Error('Forbidden: Not your load');
   if (request.load.status !== 'AVAILABLE') throw new Error('Load no longer available');
+  if (request.status !== 'PENDING') throw new Error('Request is no longer pending');
 
-  // Use a transaction to prevent race conditions (e.g. two concurrent approvals)
+  const finalPrice = request.bidPrice ? request.bidPrice : request.load.price;
+
+  // Use a transaction with atomic update to prevent race conditions
   await prisma.$transaction(async (tx) => {
-    // Re-check inside the transaction that load is still AVAILABLE
-    const freshLoad = await tx.load.findUnique({ where: { id: request.loadId }, select: { status: true } });
-    if (!freshLoad || freshLoad.status !== 'AVAILABLE') {
-      throw new Error('Load no longer available (concurrent update)');
+    // Atomic state transition: only succeeds if load is currently AVAILABLE
+    const result = await tx.load.updateMany({
+      where: {
+        id: request.loadId,
+        status: 'AVAILABLE',
+      },
+      data: {
+        status: 'BOOKED',
+        carrierId: request.carrierId,
+        price: finalPrice,
+      },
+    });
+
+    if (result.count !== 1) {
+      throw new Error('Load was already booked');
     }
 
     // Update request to APPROVED
@@ -44,19 +58,6 @@ export async function approveRequestAction(formData: FormData) {
     await tx.loadRequest.updateMany({
       where: { loadId: request.loadId, id: { not: requestId } },
       data: { status: 'REJECTED' }
-    });
-
-    // Determine the final price (bidPrice if exists, otherwise original price)
-    const finalPrice = request.bidPrice ? request.bidPrice : request.load.price;
-
-    // Update load to BOOKED and assign Carrier with the agreed price
-    await tx.load.update({
-      where: { id: request.loadId },
-      data: { 
-        status: 'BOOKED',
-        carrierId: request.carrierId,
-        price: finalPrice
-      }
     });
   });
 
