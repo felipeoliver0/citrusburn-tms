@@ -116,6 +116,7 @@ export default function UserRowActions({
             <option value="BROKER">Make Broker</option>
             <option value="CARRIER">Make Carrier</option>
             <option value="DRIVER">Make Driver</option>
+            <option value="DEALER">Make Dealer</option>
           </select>
         )}
       </div>

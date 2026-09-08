@@ -57,6 +57,7 @@ export default async function AdminUsersPage() {
                             user.role === 'ADMIN' ? 'bg-red-50 text-red-600 border-red-200' :
                             user.role === 'BROKER' ? 'bg-blue-50 text-blue-600 border-blue-200' :
                             user.role === 'CARRIER' ? 'bg-brand-50 text-brand-600 border-brand-200' :
+                            user.role === 'DEALER' ? 'bg-purple-50 text-purple-600 border-purple-200' :
                             'bg-gray-100 text-gray-600 border-gray-200'
                           }`}>
                             {user.role}

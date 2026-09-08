@@ -93,7 +93,7 @@ export async function updateUserRole(formData: FormData) {
   }
 
   const parsedUserId = z.string().uuid().safeParse(formData.get('userId'));
-  const parsedRole = z.enum(['BROKER', 'CARRIER', 'DRIVER', 'ADMIN']).safeParse(formData.get('role'));
+  const parsedRole = z.enum(['BROKER', 'CARRIER', 'DRIVER', 'ADMIN', 'DEALER']).safeParse(formData.get('role'));
   
   if (!parsedUserId.success || !parsedRole.success) return { error: 'Invalid input' };
   
