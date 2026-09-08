@@ -154,11 +154,19 @@ export default async function MyLoads(props: { searchParams: Promise<{ [key: str
     const loadId = parsed.data;
 
     const load = await prisma.load.findUnique({ where: { id: loadId } });
-    // Only allow accepting offers that are still in OFFERED status
-    await prisma.load.updateMany({ where: { id: loadId, carrierId: actionUserId, status: 'OFFERED' }, data: { status: 'BOOKED' } });
-    if (load) {
-      await createNotification(load.brokerId, 'Offer Accepted', `Carrier accepted your offer for load #${loadId.substring(0,6).toUpperCase()}`, `/load/${loadId}`);
+    if (!load) throw new Error('Load not found');
+
+    const result = await prisma.load.updateMany({ 
+      where: { id: loadId, carrierId: actionUserId, status: 'OFFERED' }, 
+      data: { status: 'BOOKED' } 
+    });
+
+    if (result.count !== 1) {
+      throw new Error('Offer is no longer available');
     }
+
+    await createNotification(load.brokerId, 'Offer Accepted', `Carrier accepted your offer for load #${loadId.substring(0,6).toUpperCase()}`, `/load/${loadId}`);
+    
     revalidatePath('/my-loads');
   }
 
