@@ -40,17 +40,13 @@ export async function GET(req: Request) {
       paymentType: true,
       currentLat: true,
       currentLng: true,
-      driverSignature: true,
-      pickupPhotos: true,
-      pickupDamages: true,
-      pickupVin: true,
-      pickupVinPhoto: true,
       podDocumentUrl: true,
-      deliverySignature: true,
-      deliveryPhotos: true,
-      deliveryDamages: true,
-      deliveryVin: true,
-      deliveryVinPhoto: true,
+      inspections: {
+        include: {
+          photos: true,
+          damages: true
+        }
+      },
       brokerId: true,
       carrierId: true,
       driverId: true,

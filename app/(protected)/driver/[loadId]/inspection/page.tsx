@@ -12,7 +12,8 @@ export default async function InspectionPage({
   const { userId, role } = await verifySession();
 
   const load = await prisma.load.findUnique({
-    where: { id: loadId }
+    where: { id: loadId },
+    include: { inspections: true }
   });
 
   if (!load) {
@@ -41,7 +42,7 @@ export default async function InspectionPage({
       type={type} 
       origin={load.originCity} 
       dest={load.destCity} 
-      initialVin={type === 'delivery' ? (load.pickupVin || '') : ''}
+      initialVin={type === 'delivery' ? (load.inspections.find(i => i.type === 'PICKUP')?.vin || '') : ''}
     />
   );
 }

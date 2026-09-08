@@ -16,12 +16,7 @@ interface LoadData {
   destZip?: string;
   destAddress?: string;
   price: number;
-  pickupVin: string | null;
-  deliveryVin: string | null;
-  pickupDamages: any;
-  deliveryDamages: any;
-  driverSignature: string | null;
-  deliverySignature: string | null;
+  inspections: any[];
   brokerCompany: string;
   brokerMc?: string | null;
   brokerUsdot?: string | null;
@@ -71,11 +66,14 @@ export default function DownloadBOLButton({ load }: { load: LoadData }) {
       theme: 'grid',
     });
 
+    const pickup = load.inspections?.find((i: any) => i.type === 'PICKUP');
+    const delivery = load.inspections?.find((i: any) => i.type === 'DELIVERY');
+
     // Vehicle Details
     autoTable(doc, {
       startY: (doc as any).lastAutoTable.finalY + 6,
       head: [['Pickup VIN', 'Delivery VIN', 'Payment Terms', 'Agreed Price']],
-      body: [[load.pickupVin || 'Pending', load.deliveryVin || 'Pending', load.paymentType || 'COD', `$${load.price.toFixed(2)}`]],
+      body: [[pickup?.vin || 'Pending', delivery?.vin || 'Pending', load.paymentType || 'COD', `$${load.price.toFixed(2)}`]],
       theme: 'grid',
     });
 
@@ -96,8 +94,8 @@ export default function DownloadBOLButton({ load }: { load: LoadData }) {
       startY: (doc as any).lastAutoTable.finalY + 6,
       head: [['Inspection Phase', 'Reported Damages']],
       body: [
-        ['Pickup', formatDamages(load.pickupDamages)],
-        ['Delivery', formatDamages(load.deliveryDamages)]
+        ['Pickup', formatDamages(pickup?.damages)],
+        ['Delivery', formatDamages(delivery?.damages)]
       ],
       theme: 'grid',
       headStyles: { fillColor: [239, 68, 68] }
@@ -165,8 +163,8 @@ export default function DownloadBOLButton({ load }: { load: LoadData }) {
       doc.setTextColor(0, 0, 0);
     };
 
-    drawCarDiagram(30, currentY, load.pickupDamages, 'Pickup Inspection');
-    drawCarDiagram(120, currentY, load.deliveryDamages, 'Delivery Inspection');
+    drawCarDiagram(30, currentY, pickup?.damages, 'Pickup Inspection');
+    drawCarDiagram(120, currentY, delivery?.damages, 'Delivery Inspection');
 
     currentY += 75;
 
@@ -175,12 +173,12 @@ export default function DownloadBOLButton({ load }: { load: LoadData }) {
     doc.text('Signatures', 14, currentY);
     currentY += 8;
 
-    if (load.driverSignature) {
+    if (pickup?.signature) {
       doc.setFontSize(10);
       doc.text('Pickup Signature:', 14, currentY);
-      const sigBase64 = load.driverSignature.startsWith('http') 
-        ? await getImageUrlAsBase64(load.driverSignature) 
-        : load.driverSignature;
+      const sigBase64 = pickup.signature.startsWith('http') 
+        ? await getImageUrlAsBase64(pickup.signature) 
+        : pickup.signature;
       
       if (sigBase64) {
         doc.addImage(sigBase64, 'PNG', 14, currentY + 5, 80, 25);
@@ -191,12 +189,12 @@ export default function DownloadBOLButton({ load }: { load: LoadData }) {
       doc.text('Pickup Signature: Pending', 14, currentY);
     }
 
-    if (load.deliverySignature) {
+    if (delivery?.signature) {
       doc.setFontSize(10);
       doc.text('Delivery Signature:', 100, currentY);
-      const sigBase64 = load.deliverySignature.startsWith('http') 
-        ? await getImageUrlAsBase64(load.deliverySignature) 
-        : load.deliverySignature;
+      const sigBase64 = delivery.signature.startsWith('http') 
+        ? await getImageUrlAsBase64(delivery.signature) 
+        : delivery.signature;
       
       if (sigBase64) {
         doc.addImage(sigBase64, 'PNG', 100, currentY + 5, 80, 25);

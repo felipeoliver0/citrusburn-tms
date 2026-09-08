@@ -17,7 +17,11 @@ export default async function TrackingPage({
 
   const load = await prisma.load.findUnique({
     where: { id: loadId },
-    include: { driver: true, carrier: true }
+    include: { 
+      driver: true, 
+      carrier: true,
+      inspections: { include: { photos: true, damages: true } }
+    }
   });
 
   if (!load) {
@@ -123,64 +127,74 @@ export default async function TrackingPage({
         </div>
 
         {/* INSPECTION PHOTOS SECTION */}
-        {(load.pickupPhotos || load.pickupVinPhoto || load.deliveryPhotos || load.deliveryVinPhoto) && (
+        {(load.inspections.length > 0) && (
           <div className="mt-6 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
             <h2 className="text-xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-2">Vehicle Inspection Photos</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Pickup Photos */}
-              <div>
-                <h3 className="text-sm font-bold text-brand-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-brand-500"></span> Pickup Inspection
-                </h3>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  {load.pickupVinPhoto && (
-                    <div className="border border-gray-200 rounded-lg overflow-hidden group relative">
-                      <Image src={load.pickupVinPhoto} alt="Pickup VIN" width={400} height={300} className="w-full h-32 object-cover group-hover:scale-105 transition-transform" />
-                      <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] font-bold uppercase tracking-wider p-1 text-center backdrop-blur-sm">VIN Photo</div>
+              {(() => {
+                const pickup = load.inspections.find(i => i.type === 'PICKUP');
+                return (
+                  <div>
+                    <h3 className="text-sm font-bold text-brand-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-brand-500"></span> Pickup Inspection
+                    </h3>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      {pickup?.vinPhoto && (
+                        <div className="border border-gray-200 rounded-lg overflow-hidden group relative">
+                          <Image src={pickup.vinPhoto} alt="Pickup VIN" width={400} height={300} className="w-full h-32 object-cover group-hover:scale-105 transition-transform" />
+                          <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] font-bold uppercase tracking-wider p-1 text-center backdrop-blur-sm">VIN Photo</div>
+                        </div>
+                      )}
+                      {pickup?.photos && pickup.photos.map((photo: any, idx: number) => (
+                        <div key={idx} className="border border-gray-200 rounded-lg overflow-hidden group relative">
+                          <Image src={photo.photoUrl} alt={photo.description || 'Photo'} width={400} height={300} className="w-full h-32 object-cover group-hover:scale-105 transition-transform" />
+                          <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] font-bold uppercase tracking-wider p-1 text-center backdrop-blur-sm">{photo.description || 'Photo'}</div>
+                        </div>
+                      ))}
+                      {!pickup?.vinPhoto && (!pickup?.photos || pickup.photos.length === 0) && (
+                        <div className="col-span-2 p-6 border-2 border-dashed border-gray-200 rounded-xl text-center text-gray-400 text-sm font-bold">
+                          No pickup photos available
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {Array.isArray(load.pickupPhotos) && load.pickupPhotos.map((photo: any, idx: number) => (
-                    <div key={idx} className="border border-gray-200 rounded-lg overflow-hidden group relative">
-                      <Image src={photo.base64} alt={photo.part} width={400} height={300} className="w-full h-32 object-cover group-hover:scale-105 transition-transform" />
-                      <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] font-bold uppercase tracking-wider p-1 text-center backdrop-blur-sm">{photo.part}</div>
-                    </div>
-                  ))}
-                  {!load.pickupVinPhoto && (!Array.isArray(load.pickupPhotos) || load.pickupPhotos.length === 0) && (
-                    <div className="col-span-2 p-6 border-2 border-dashed border-gray-200 rounded-xl text-center text-gray-400 text-sm font-bold">
-                      No pickup photos available
-                    </div>
-                  )}
-                </div>
-              </div>
+                  </div>
+                );
+              })()}
 
               {/* Delivery Photos */}
-              <div>
-                <h3 className="text-sm font-bold text-green-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-green-500"></span> Delivery Inspection
-                </h3>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  {load.deliveryVinPhoto && (
-                    <div className="border border-gray-200 rounded-lg overflow-hidden group relative">
-                      <Image src={load.deliveryVinPhoto} alt="Delivery VIN" width={400} height={300} className="w-full h-32 object-cover group-hover:scale-105 transition-transform" />
-                      <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] font-bold uppercase tracking-wider p-1 text-center backdrop-blur-sm">VIN Photo</div>
+              {(() => {
+                const delivery = load.inspections.find(i => i.type === 'DELIVERY');
+                return (
+                  <div>
+                    <h3 className="text-sm font-bold text-green-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span> Delivery Inspection
+                    </h3>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      {delivery?.vinPhoto && (
+                        <div className="border border-gray-200 rounded-lg overflow-hidden group relative">
+                          <Image src={delivery.vinPhoto} alt="Delivery VIN" width={400} height={300} className="w-full h-32 object-cover group-hover:scale-105 transition-transform" />
+                          <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] font-bold uppercase tracking-wider p-1 text-center backdrop-blur-sm">VIN Photo</div>
+                        </div>
+                      )}
+                      {delivery?.photos && delivery.photos.map((photo: any, idx: number) => (
+                        <div key={idx} className="border border-gray-200 rounded-lg overflow-hidden group relative">
+                          <Image src={photo.photoUrl} alt={photo.description || 'Photo'} width={400} height={300} className="w-full h-32 object-cover group-hover:scale-105 transition-transform" />
+                          <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] font-bold uppercase tracking-wider p-1 text-center backdrop-blur-sm">{photo.description || 'Photo'}</div>
+                        </div>
+                      ))}
+                      {!delivery?.vinPhoto && (!delivery?.photos || delivery.photos.length === 0) && (
+                        <div className="col-span-2 p-6 border-2 border-dashed border-gray-200 rounded-xl text-center text-gray-400 text-sm font-bold">
+                          No delivery photos available
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {Array.isArray(load.deliveryPhotos) && load.deliveryPhotos.map((photo: any, idx: number) => (
-                    <div key={idx} className="border border-gray-200 rounded-lg overflow-hidden group relative">
-                      <Image src={photo.base64} alt={photo.part} width={400} height={300} className="w-full h-32 object-cover group-hover:scale-105 transition-transform" />
-                      <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] font-bold uppercase tracking-wider p-1 text-center backdrop-blur-sm">{photo.part}</div>
-                    </div>
-                  ))}
-                  {!load.deliveryVinPhoto && (!Array.isArray(load.deliveryPhotos) || load.deliveryPhotos.length === 0) && (
-                    <div className="col-span-2 p-6 border-2 border-dashed border-gray-200 rounded-xl text-center text-gray-400 text-sm font-bold">
-                      No delivery photos available
-                    </div>
-                  )}
-                </div>
-              </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         )}

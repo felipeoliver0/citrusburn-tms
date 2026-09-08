@@ -101,6 +101,7 @@ model User {
   notifications    Notification[]
   messagesSent     Message[]
   auditLogs        AuditLog[]
+  inspections      Inspection[]  @relation("UserInspections")
 
   @@index([deletedAt])
 }
@@ -179,22 +180,11 @@ model Load {
   trailerType    TrailerType   @default(OPEN)
   paymentType    PaymentType   @default(COD)
   
-  currentLat     Float?        
-  currentLng     Float?        
-  driverSignature String?
-  pickupPhotos      Json?     // Galeria comprimida (Frente, Lado, etc.)
-  pickupDamages     Json?     // Mapa 2D com as coordenadas dos danos e códigos AIAG
-  pickupVin         String?   // VIN Scanned
-  pickupVinPhoto    String?   // Base64 VIN Photo
+  currentLat     Float?
+  currentLng     Float?
 
-  podDocumentUrl    String?   // Base64 ou URL real do comprovante de entrega (POD/BOL)
+  podDocumentUrl String? // Base64 ou URL real do comprovante de entrega (POD/BOL)
 
-  deliverySignature String?   // Base64 Signature
-  deliveryPhotos    Json?
-  deliveryDamages   Json?     // Mapa 2D com as coordenadas dos danos na entrega
-  deliveryVin       String?
-  deliveryVinPhoto  String?   // Base64 VIN Photo
-  
   brokerId       String
   broker         User          @relation("BrokerLoads", fields: [brokerId], references: [id], onDelete: Cascade)
   
@@ -208,6 +198,7 @@ model Load {
   reviews        Review[]
   messages       Message[]
   locationHistory LocationHistory[]
+  inspections    Inspection[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @default(now()) @updatedAt
   deletedAt      DateTime?
@@ -286,4 +277,55 @@ model Message {
   createdAt DateTime @default(now())
 
   @@index([loadId, createdAt])
+}
+
+enum InspectionType {
+  PICKUP
+  DELIVERY
+}
+
+model Inspection {
+  id          String   @id @default(uuid())
+  loadId      String
+  load        Load     @relation(fields: [loadId], references: [id], onDelete: Cascade)
+  type        InspectionType
+  
+  inspectorId String?
+  inspector   User?    @relation("UserInspections", fields: [inspectorId], references: [id], onDelete: SetNull)
+  
+  lat         Float?
+  lng         Float?
+  
+  vin         String?
+  vinPhoto    String?  // Base64
+  signature   String?  // Base64
+  
+  photos      InspectionPhoto[]
+  damages     InspectionDamage[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([loadId, type])
+  @@index([loadId])
+}
+
+model InspectionPhoto {
+  id           String     @id @default(uuid())
+  inspectionId String
+  inspection   Inspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  photoUrl     String
+  description  String?
+  createdAt    DateTime   @default(now())
+}
+
+model InspectionDamage {
+  id           String     @id @default(uuid())
+  inspectionId String
+  inspection   Inspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  x            Float
+  y            Float
+  damageCode   String
+  severity     String?
+  createdAt    DateTime   @default(now())
 }

@@ -16,10 +16,17 @@ export default async function InspectionReportPage({
   // Busca os dados da carga no banco
   const load = await prisma.load.findUnique({
     where: { id: loadId },
-    include: { carrier: true, broker: true }
+    include: { 
+      carrier: true, 
+      broker: true,
+      inspections: { include: { photos: true, damages: true } }
+    }
   });
 
   if (!load) redirect('/loadboard');
+
+  const pickup = load.inspections.find((i: any) => i.type === 'PICKUP');
+  const delivery = load.inspections.find((i: any) => i.type === 'DELIVERY');
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900 p-8 font-sans print:bg-white print:p-0">
@@ -41,13 +48,13 @@ export default async function InspectionReportPage({
 
       <div className="max-w-4xl mx-auto space-y-12">
         
-        {!load.pickupPhotos && !load.deliveryPhotos && (
+        {!pickup && !delivery && (
           <div className="text-center text-gray-500 py-12 bg-white rounded-xl border border-gray-200">
             No inspection reports have been submitted for this load yet.
           </div>
         )}
 
-        {load.pickupPhotos && (
+        {pickup && (
           <section className="bg-white border border-gray-300 rounded-xl p-8 shadow-sm print:shadow-none print:border-none">
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-4">
               <span className="text-2xl">📋</span> Pickup Inspection
@@ -56,21 +63,21 @@ export default async function InspectionReportPage({
             <div className="space-y-8">
 
               {/* Pickup Damages (2D Map) */}
-              {load.pickupDamages && (
+              {pickup.damages && pickup.damages.length > 0 && (
                 <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
                   <div className="text-xs uppercase text-gray-400 font-bold tracking-wider mb-4 text-center">Visual Condition Report</div>
-                  <DamageMarker value={(load.pickupDamages as any) as DamageMarkerData[]} readOnly />
+                  <DamageMarker value={(pickup.damages as any) as DamageMarkerData[]} readOnly />
                 </div>
               )}
 
               <div>
                 <div className="text-xs uppercase text-gray-400 font-bold tracking-wider mb-4">Vehicle Photos (Geotagged)</div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {Object.entries(load.pickupPhotos as Record<string, string>).map(([key, base64]) => (
-                    <div key={key} className="border border-gray-200 rounded overflow-hidden aspect-[4/3] relative group">
-                      <img src={base64} alt={`Pickup ${key}`} className="w-full h-full object-cover" />
+                  {pickup.photos.map((photo: any, idx: number) => (
+                    <div key={idx} className="border border-gray-200 rounded overflow-hidden aspect-[4/3] relative group">
+                      <img src={photo.photoUrl} alt={photo.description || 'Photo'} className="w-full h-full object-cover" />
                       <div className="absolute top-0 left-0 bg-black/60 text-white text-[10px] font-bold uppercase px-2 py-1 m-1 rounded backdrop-blur-sm">
-                        {key}
+                        {photo.description || 'Photo'}
                       </div>
                     </div>
                   ))}
@@ -80,14 +87,14 @@ export default async function InspectionReportPage({
               <div className="grid grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-200">
                 <div>
                   <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Scanned VIN</div>
-                  <div className="text-xl font-mono font-bold text-gray-900 mt-1">{load.pickupVin || 'Not provided'}</div>
+                  <div className="text-xl font-mono font-bold text-gray-900 mt-1">{pickup.vin || 'Not provided'}</div>
                 </div>
                 
-                {load.driverSignature && (
+                {pickup.signature && (
                   <div>
                     <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider mb-2">Driver eBOL Signature</div>
                     <div className="bg-white border border-gray-300 rounded p-2 inline-block">
-                      <img src={load.driverSignature} alt="Driver Signature" className="h-16 w-auto mix-blend-multiply" />
+                      <img src={pickup.signature} alt="Driver Signature" className="h-16 w-auto mix-blend-multiply" />
                     </div>
                   </div>
                 )}
@@ -96,7 +103,7 @@ export default async function InspectionReportPage({
           </section>
         )}
 
-        {load.deliveryPhotos && (
+        {delivery && (
           <section className="bg-white border border-gray-300 rounded-xl p-8 shadow-sm print:shadow-none print:border-none print:break-before-page">
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-4">
               <span className="text-2xl">🏁</span> Delivery Inspection
@@ -105,21 +112,21 @@ export default async function InspectionReportPage({
             <div className="space-y-8">
 
               {/* Delivery Damages (2D Map) */}
-              {load.deliveryDamages && (
+              {delivery.damages && delivery.damages.length > 0 && (
                 <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
                   <div className="text-xs uppercase text-gray-400 font-bold tracking-wider mb-4 text-center">Visual Condition Report</div>
-                  <DamageMarker value={(load.deliveryDamages as any) as DamageMarkerData[]} readOnly />
+                  <DamageMarker value={(delivery.damages as any) as DamageMarkerData[]} readOnly />
                 </div>
               )}
 
               <div>
                 <div className="text-xs uppercase text-gray-400 font-bold tracking-wider mb-4">Vehicle Photos (Geotagged)</div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {Object.entries(load.deliveryPhotos as Record<string, string>).map(([key, base64]) => (
-                    <div key={key} className="border border-gray-200 rounded overflow-hidden aspect-[4/3] relative group">
-                      <img src={base64} alt={`Delivery ${key}`} className="w-full h-full object-cover" />
+                  {delivery.photos.map((photo: any, idx: number) => (
+                    <div key={idx} className="border border-gray-200 rounded overflow-hidden aspect-[4/3] relative group">
+                      <img src={photo.photoUrl} alt={photo.description || 'Photo'} className="w-full h-full object-cover" />
                       <div className="absolute top-0 left-0 bg-black/60 text-white text-[10px] font-bold uppercase px-2 py-1 m-1 rounded backdrop-blur-sm">
-                        {key}
+                        {photo.description || 'Photo'}
                       </div>
                     </div>
                   ))}
@@ -129,14 +136,14 @@ export default async function InspectionReportPage({
               <div className="grid grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-200">
                 <div>
                   <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Scanned VIN</div>
-                  <div className="text-xl font-mono font-bold text-gray-900 mt-1">{load.deliveryVin || 'Not provided'}</div>
+                  <div className="text-xl font-mono font-bold text-gray-900 mt-1">{delivery.vin || 'Not provided'}</div>
                 </div>
                 
-                {load.deliverySignature && (
+                {delivery.signature && (
                   <div>
                     <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider mb-2">Receiver eBOL Signature</div>
                     <div className="bg-white border border-gray-300 rounded p-2 inline-block">
-                      <img src={load.deliverySignature} alt="Receiver Signature" className="h-16 w-auto mix-blend-multiply" />
+                      <img src={delivery.signature} alt="Receiver Signature" className="h-16 w-auto mix-blend-multiply" />
                     </div>
                   </div>
                 )}

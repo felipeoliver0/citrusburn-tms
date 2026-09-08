@@ -78,8 +78,8 @@ export async function submitInspectionAction(formData: FormData) {
   }
 
   // Process uploads concurrently for speed
-  const uploadedVinPhoto = vinPhoto ? await uploadBase64ToBlob(vinPhoto, `vin-${loadId}`) : '';
-  const uploadedSignature = signature ? await uploadBase64ToBlob(signature, `sig-${loadId}`) : '';
+  const uploadedVinPhoto = vinPhoto ? await uploadBase64ToBlob(vinPhoto, `vin-${loadId}`) : null;
+  const uploadedSignature = signature ? await uploadBase64ToBlob(signature, `sig-${loadId}`) : null;
   const uploadedPod = podBase64 ? await uploadBase64ToBlob(podBase64, `pod-${loadId}`) : null;
 
   // Upload damages photos
@@ -96,14 +96,35 @@ export async function submitInspectionAction(formData: FormData) {
     }
   }
 
+  const inspectionType = type === 'pickup' ? 'PICKUP' : 'DELIVERY';
+
+  await prisma.inspection.create({
+    data: {
+      loadId,
+      type: inspectionType,
+      inspectorId: userId,
+      vin: vin || null,
+      vinPhoto: uploadedVinPhoto,
+      signature: uploadedSignature,
+      photos: {
+        create: vehiclePhotos.map((p: any) => ({ 
+          photoUrl: p.base64 || p.photoUrl || p.url || p,
+          description: p.label || p.description || null
+        }))
+      },
+      damages: {
+        create: damages.map((d: any) => ({
+          x: d.x,
+          y: d.y,
+          damageCode: d.code || d.damageCode || 'UNKNOWN',
+          severity: d.severity || null
+        }))
+      }
+    }
+  });
+
   if (type === 'pickup') {
-    await transitionLoad(loadId, 'IN_TRANSIT', userId, role as Role, {
-      pickupVin: vin,
-      pickupVinPhoto: uploadedVinPhoto,
-      pickupDamages: damages,
-      pickupPhotos: vehiclePhotos,
-      driverSignature: uploadedSignature
-    });
+    await transitionLoad(loadId, 'IN_TRANSIT', userId, role as Role, {});
 
     await createNotification(
       load.brokerId,
@@ -116,11 +137,6 @@ export async function submitInspectionAction(formData: FormData) {
     }
   } else if (type === 'delivery') {
     await transitionLoad(loadId, 'DELIVERED', userId, role as Role, {
-      deliveryVin: vin,
-      deliveryVinPhoto: uploadedVinPhoto,
-      deliveryDamages: damages,
-      deliveryPhotos: vehiclePhotos,
-      deliverySignature: uploadedSignature,
       ...(uploadedPod ? { podDocumentUrl: uploadedPod } : {})
     });
 
