@@ -173,11 +173,44 @@ export default async function MyLoads(props: { searchParams: Promise<{ [key: str
     const parsedLoad = z.string().uuid().safeParse(loadIdRaw);
     const parsedDriver = z.string().uuid().safeParse(driverIdRaw);
 
-    if (!parsedLoad.success || !parsedDriver.success) return;
+    if (!parsedLoad.success || !parsedDriver.success) {
+      throw new Error('Invalid load or driver ID');
+    }
+
     const loadId = parsedLoad.data;
     const driverId = parsedDriver.data;
-    await prisma.load.updateMany({ where: { id: loadId, carrierId: actionUserId }, data: { driverId } });
-    await createNotification(driverId, 'New Route Assigned', `You have been assigned a new route for load #${loadId.substring(0,6).toUpperCase()}`, `/driver`);
+
+    const driver = await prisma.user.findFirst({
+      where: {
+        id: driverId,
+        role: 'DRIVER',
+        employerId: actionUserId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!driver) {
+      throw new Error('Driver does not belong to this carrier');
+    }
+
+    const result = await prisma.load.updateMany({
+      where: {
+        id: loadId,
+        carrierId: actionUserId,
+      },
+      data: {
+        driverId: driver.id,
+      },
+    });
+
+    if (result.count !== 1) {
+      throw new Error('Load not found');
+    }
+
+    await createNotification(driver.id, 'New Route Assigned', `You have been assigned a new route for load #${loadId.substring(0,6).toUpperCase()}`, `/driver`);
     revalidatePath('/my-loads');
   }
 
