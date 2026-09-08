@@ -38,7 +38,7 @@ export async function transitionLoad(
   actorId: string,
   actorRole: Role,
   additionalData: Prisma.LoadUncheckedUpdateInput = {},
-  tx: Prisma.TransactionClient | typeof prisma = prisma
+  tx: Prisma.TransactionClient | any = prisma
 ) {
   // Fetch current state
   const load = await tx.load.findUnique({
