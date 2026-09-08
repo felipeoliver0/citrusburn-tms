@@ -1,5 +1,5 @@
 import 'server-only';
-import { put } from '@vercel/blob';
+import { put, del } from '@vercel/blob';
 
 /**
  * Helper to validate magic bytes (file signature)
@@ -91,4 +91,19 @@ export async function uploadArrayImages<T extends Record<string, unknown>>(
     }
   }
   return result;
+}
+
+/**
+ * Deletes a blob from Vercel Blob storage by its URL.
+ * Safely ignores if the URL is invalid or the token is not set.
+ */
+export async function deleteBlob(url: string): Promise<void> {
+  if (!url || !url.startsWith('http')) return;
+  if (!process.env.BLOB_READ_WRITE_TOKEN) return;
+
+  try {
+    await del(url);
+  } catch (error) {
+    console.error('Failed to delete blob:', url, error);
+  }
 }
