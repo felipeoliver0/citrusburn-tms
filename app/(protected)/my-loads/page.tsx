@@ -9,6 +9,9 @@ import AutoRefresh from '@/app/components/AutoRefresh';
 import FilterBar from './components/FilterBar';
 import Link from 'next/link';
 import { verifySession, getSession } from '@/lib/dal';
+import { Role } from '@prisma/client';
+import { transitionLoad } from '@/lib/loadState';
+import { Star } from 'lucide-react';
 import { z } from 'zod';
 
 const PAGE_SIZE = 10;
@@ -156,13 +159,10 @@ export default async function MyLoads(props: { searchParams: Promise<{ [key: str
     const load = await prisma.load.findUnique({ where: { id: loadId } });
     if (!load) throw new Error('Load not found');
 
-    const result = await prisma.load.updateMany({ 
-      where: { id: loadId, carrierId: actionUserId, status: 'OFFERED' }, 
-      data: { status: 'BOOKED' } 
-    });
-
-    if (result.count !== 1) {
-      throw new Error('Offer is no longer available');
+    try {
+      await transitionLoad(loadId, 'BOOKED', actionUserId, role as Role);
+    } catch (e: any) {
+      throw new Error(e.message || 'Offer is no longer available');
     }
 
     await createNotification(load.brokerId, 'Offer Accepted', `Carrier accepted your offer for load #${loadId.substring(0,6).toUpperCase()}`, `/load/${loadId}`);
@@ -233,7 +233,7 @@ export default async function MyLoads(props: { searchParams: Promise<{ [key: str
     if (!parsed.success) throw new Error('Invalid load ID');
     const loadId = parsed.data;
 
-    await prisma.load.updateMany({ where: { id: loadId, carrierId: actionUserId, status: 'OFFERED' }, data: { status: 'AVAILABLE', carrierId: null } });
+    await transitionLoad(loadId, 'AVAILABLE', actionUserId, role as Role, { carrierId: null });
     revalidatePath('/my-loads');
   }
 

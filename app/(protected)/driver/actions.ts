@@ -5,6 +5,8 @@ import { getSession } from '@/lib/dal';
 import { createNotification } from '@/lib/notifications';
 import { SubmitInspectionSchema } from '@/lib/validations';
 import { uploadBase64ToBlob } from '@/lib/blobStorage';
+import { transitionLoad } from '@/lib/loadState';
+import { Role } from '@prisma/client';
 
 export async function submitInspectionAction(formData: FormData) {
   const { userId, role } = await getSession();
@@ -95,21 +97,13 @@ export async function submitInspectionAction(formData: FormData) {
   }
 
   if (type === 'pickup') {
-    const updated = await prisma.load.updateMany({
-      where: { id: loadId, status: 'BOOKED', driverId: userId },
-      data: {
-        pickupVin: vin,
-        pickupVinPhoto: uploadedVinPhoto,
-        pickupDamages: damages,
-        pickupPhotos: vehiclePhotos,
-        driverSignature: uploadedSignature,
-        status: 'IN_TRANSIT'
-      }
+    await transitionLoad(loadId, 'IN_TRANSIT', userId, role as Role, {
+      pickupVin: vin,
+      pickupVinPhoto: uploadedVinPhoto,
+      pickupDamages: damages,
+      pickupPhotos: vehiclePhotos,
+      driverSignature: uploadedSignature
     });
-
-    if (updated.count !== 1) {
-      throw new Error('Load must be BOOKED before pickup');
-    }
 
     await createNotification(
       load.brokerId,
@@ -121,22 +115,14 @@ export async function submitInspectionAction(formData: FormData) {
       await createNotification(load.carrierId, 'Load Picked Up', `Driver has picked up load #${loadId.substring(0,6).toUpperCase()}.`, `/track/${loadId}`);
     }
   } else if (type === 'delivery') {
-    const updated = await prisma.load.updateMany({
-      where: { id: loadId, status: 'IN_TRANSIT', driverId: userId },
-      data: {
-        deliveryVin: vin,
-        deliveryVinPhoto: uploadedVinPhoto,
-        deliveryDamages: damages,
-        deliveryPhotos: vehiclePhotos,
-        deliverySignature: uploadedSignature,
-        status: 'DELIVERED',
-        ...(uploadedPod ? { podDocumentUrl: uploadedPod } : {})
-      }
+    await transitionLoad(loadId, 'DELIVERED', userId, role as Role, {
+      deliveryVin: vin,
+      deliveryVinPhoto: uploadedVinPhoto,
+      deliveryDamages: damages,
+      deliveryPhotos: vehiclePhotos,
+      deliverySignature: uploadedSignature,
+      ...(uploadedPod ? { podDocumentUrl: uploadedPod } : {})
     });
-
-    if (updated.count !== 1) {
-      throw new Error('Load must be IN_TRANSIT before delivery');
-    }
 
     await createNotification(
       load.brokerId,

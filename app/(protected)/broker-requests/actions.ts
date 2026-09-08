@@ -5,6 +5,8 @@ import { getSession } from '@/lib/dal';
 import { revalidatePath } from 'next/cache';
 import { createNotification } from '@/lib/notifications';
 import { logAudit } from '@/lib/audit';
+import { transitionLoad } from '@/lib/loadState';
+import { Role } from '@prisma/client';
 import { z } from 'zod';
 
 export async function approveRequestAction(formData: FormData) {
@@ -31,22 +33,18 @@ export async function approveRequestAction(formData: FormData) {
 
   // Use a transaction with atomic update to prevent race conditions
   await prisma.$transaction(async (tx) => {
-    // Atomic state transition: only succeeds if load is currently AVAILABLE
-    const result = await tx.load.updateMany({
-      where: {
-        id: request.loadId,
-        status: 'AVAILABLE',
-      },
-      data: {
-        status: 'BOOKED',
+    // Atomic state transition using central state machine
+    await transitionLoad(
+      request.loadId,
+      'BOOKED',
+      userId,
+      'BROKER' as Role,
+      {
         carrierId: request.carrierId,
         price: finalPrice,
       },
-    });
-
-    if (result.count !== 1) {
-      throw new Error('Load was already booked');
-    }
+      tx
+    );
 
     // Update request to APPROVED
     await tx.loadRequest.update({
