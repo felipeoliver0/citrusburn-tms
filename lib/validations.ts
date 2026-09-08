@@ -105,6 +105,24 @@ export const CreateLoadSchema = z.object({
       path: ['deliveryDate'],
     });
   }
+
+  // Rate Per Mile (RPM) Validation to catch absurd values
+  if (data.distance > 0) {
+    const ratePerMile = data.price / data.distance;
+    if (ratePerMile > 1000) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Rate per mile is suspiciously high ($${ratePerMile.toFixed(2)}/mi). Please verify.`,
+        path: ['price'],
+      });
+    } else if (ratePerMile < 0.10) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Rate per mile is suspiciously low ($${ratePerMile.toFixed(2)}/mi). Please verify.`,
+        path: ['price'],
+      });
+    }
+  }
 });
 
 export const UpdateLoadSchema = z.object({
@@ -120,6 +138,24 @@ export const UpdateLoadSchema = z.object({
   trailerType: z.string().min(1).max(50),
   paymentType: z.string().min(1).max(50),
   vehiclesList: z.array(VehicleSchema).max(20).default([]),
+}).superRefine((data, ctx) => {
+  // Rate Per Mile (RPM) Validation to catch absurd values
+  if (data.distance > 0) {
+    const ratePerMile = data.price / data.distance;
+    if (ratePerMile > 1000) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Rate per mile is suspiciously high ($${ratePerMile.toFixed(2)}/mi). Please verify.`,
+        path: ['price'],
+      });
+    } else if (ratePerMile < 0.10) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Rate per mile is suspiciously low ($${ratePerMile.toFixed(2)}/mi). Please verify.`,
+        path: ['price'],
+      });
+    }
+  }
 });
 
 export const SubmitInspectionSchema = z.object({
