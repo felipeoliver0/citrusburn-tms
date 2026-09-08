@@ -225,7 +225,7 @@ export default async function MyLoads(props: { searchParams: Promise<{ [key: str
     if (!parsed.success) throw new Error('Invalid load ID');
     const loadId = parsed.data;
 
-    await prisma.load.updateMany({ where: { id: loadId, carrierId: actionUserId }, data: { status: 'AVAILABLE', carrierId: null } });
+    await prisma.load.updateMany({ where: { id: loadId, carrierId: actionUserId, status: 'OFFERED' }, data: { status: 'AVAILABLE', carrierId: null } });
     revalidatePath('/my-loads');
   }
 
