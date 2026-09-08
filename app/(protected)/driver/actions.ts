@@ -63,12 +63,16 @@ export async function submitInspectionAction(formData: FormData) {
     throw new Error('Forbidden: Driver is not assigned to this load');
   }
 
-  if (type === 'pickup' && load.status !== 'BOOKED') {
-    throw new Error('Load is not ready for pickup inspection');
+  if (type === 'pickup') {
+    if (load.status !== 'BOOKED') {
+      throw new Error('Load must be BOOKED before pickup');
+    }
   }
 
-  if (type === 'delivery' && load.status !== 'IN_TRANSIT') {
-    throw new Error('Load is not in transit');
+  if (type === 'delivery') {
+    if (load.status !== 'IN_TRANSIT') {
+      throw new Error('Load must be IN_TRANSIT before delivery');
+    }
   }
 
   // Process uploads concurrently for speed
@@ -91,8 +95,8 @@ export async function submitInspectionAction(formData: FormData) {
   }
 
   if (type === 'pickup') {
-    await prisma.load.update({
-      where: { id: loadId },
+    const updated = await prisma.load.updateMany({
+      where: { id: loadId, status: 'BOOKED', driverId: userId },
       data: {
         pickupVin: vin,
         pickupVinPhoto: uploadedVinPhoto,
@@ -103,6 +107,10 @@ export async function submitInspectionAction(formData: FormData) {
       }
     });
 
+    if (updated.count !== 1) {
+      throw new Error('Load must be BOOKED before pickup');
+    }
+
     await createNotification(
       load.brokerId,
       'Load Picked Up',
@@ -112,9 +120,9 @@ export async function submitInspectionAction(formData: FormData) {
     if (load.carrierId) {
       await createNotification(load.carrierId, 'Load Picked Up', `Driver has picked up load #${loadId.substring(0,6).toUpperCase()}.`, `/track/${loadId}`);
     }
-  } else {
-    await prisma.load.update({
-      where: { id: loadId },
+  } else if (type === 'delivery') {
+    const updated = await prisma.load.updateMany({
+      where: { id: loadId, status: 'IN_TRANSIT', driverId: userId },
       data: {
         deliveryVin: vin,
         deliveryVinPhoto: uploadedVinPhoto,
@@ -126,6 +134,10 @@ export async function submitInspectionAction(formData: FormData) {
       }
     });
 
+    if (updated.count !== 1) {
+      throw new Error('Load must be IN_TRANSIT before delivery');
+    }
+
     await createNotification(
       load.brokerId,
       'Load Delivered',
@@ -135,6 +147,8 @@ export async function submitInspectionAction(formData: FormData) {
     if (load.carrierId) {
       await createNotification(load.carrierId, 'Load Delivered', `Driver has delivered load #${loadId.substring(0,6).toUpperCase()}.`, `/load/${loadId}`);
     }
+  } else {
+    throw new Error('Invalid inspection type');
   }
 
   return { success: true };
