@@ -78,6 +78,33 @@ export const CreateLoadSchema = z.object({
   pickupDate: z.string().min(1, 'Pickup date is required'),
   deliveryDate: z.string().min(1, 'Delivery date is required'),
   postToCD: z.boolean().optional().default(false),
+}).superRefine((data, ctx) => {
+  const pickup = new Date(data.pickupDate);
+  const delivery = new Date(data.deliveryDate);
+  
+  if (Number.isNaN(pickup.getTime())) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Invalid pickup date',
+      path: ['pickupDate'],
+    });
+  }
+
+  if (Number.isNaN(delivery.getTime())) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Invalid delivery date',
+      path: ['deliveryDate'],
+    });
+  }
+
+  if (!Number.isNaN(pickup.getTime()) && !Number.isNaN(delivery.getTime()) && delivery < pickup) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Delivery date cannot be before pickup date',
+      path: ['deliveryDate'],
+    });
+  }
 });
 
 export const UpdateLoadSchema = z.object({
