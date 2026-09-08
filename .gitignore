@@ -48,3 +48,30 @@ next-env.d.ts
 # exports
 *.zip
 *.tar.gz
+
+# ─── Debug & Migration Scripts (private — do not expose publicly) ─
+scripts/reset_db.js
+scripts/delete_loads.ts
+scripts/force-deliver-load.ts
+scripts/reassign-load.ts
+scripts/migrate.js
+scripts/migrate2.js
+scripts/migrate_white.js
+scripts/migrate_white2.js
+scripts/fix_logging.js
+scripts/check-loads.js
+scripts/check-loads-transit.js
+scripts/check_ga_loads.ts
+scripts/check_loads.ts
+scripts/migrate_to_blob.ts
+scripts/reassign-load.ts
+scripts/run_e2e_test.ts
+scripts/simulate-traffic.ts
+scripts/seed-stress-test.ts
+scripts/seed_broker.ts
+scripts/seed_broker_loads.ts
+scripts/seed_orlando_loads.ts
+scripts/seed_us_loads.ts
+scripts/seed_world_loads.ts
+scripts/list-carriers.ts
+scripts/create-test-broker.ts
