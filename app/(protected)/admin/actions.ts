@@ -5,6 +5,8 @@ import { getSession } from '@/lib/dal';
 import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { PasswordSchema } from '@/lib/validations';
+import { logAudit } from '@/lib/audit';
 
 export async function resetUserPassword(formData: FormData) {
   const { userId, role } = await getSession();
@@ -13,10 +15,10 @@ export async function resetUserPassword(formData: FormData) {
   }
 
   const parsedUserId = z.string().uuid().safeParse(formData.get('userId'));
-  const parsedPassword = z.string().min(6).max(128).safeParse(formData.get('newPassword'));
+  const parsedPassword = PasswordSchema.safeParse(formData.get('newPassword'));
   
   if (!parsedUserId.success) return { error: 'Invalid user ID' };
-  if (!parsedPassword.success) return { error: 'Password must be between 6 and 128 characters' };
+  if (!parsedPassword.success) return { error: 'Password does not meet security requirements' };
 
   const targetUserId = parsedUserId.data;
   const newPassword = parsedPassword.data;
@@ -28,6 +30,8 @@ export async function resetUserPassword(formData: FormData) {
       where: { id: targetUserId },
       data: { passwordHash }
     });
+
+    await logAudit(userId, 'ADMIN_PASSWORD_RESET', 'User', targetUserId);
 
     revalidatePath('/admin/users');
     return { success: 'Password updated successfully!' };
