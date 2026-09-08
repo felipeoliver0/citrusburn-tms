@@ -5,11 +5,12 @@ import { Route, Loader2 } from 'lucide-react';
 import { fetchRouteCoordinates } from './simulatorActions';
 
 interface GpsSimulatorProps {
+  loadId: string;
   origin: string;
   dest: string;
 }
 
-export default function GpsSimulator({ origin, dest }: GpsSimulatorProps) {
+export default function GpsSimulator({ loadId, origin, dest }: GpsSimulatorProps) {
   const [isSimulating, setIsSimulating] = useState(false);
   const [isLoadingRoute, setIsLoadingRoute] = useState(false);
   
@@ -51,7 +52,7 @@ export default function GpsSimulator({ origin, dest }: GpsSimulatorProps) {
       await fetch('/api/tracking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lat, lng })
+        body: JSON.stringify({ loadId, lat, lng })
       });
     } catch (e) {
       console.error('Simulator error', e instanceof Error ? e.message : 'Unknown error');

@@ -28,49 +28,50 @@ export async function POST(req: Request) {
       );
     }
 
-    const { lat, lng } = parsed.data;
+    const { loadId, lat, lng } = parsed.data;
 
-    // Find all active loads for this driver
-    const activeLoads = await prisma.load.findMany({
+    // Find the specific active load for this driver
+    const load = await prisma.load.findUnique({
       where: {
-        driverId: userId,
-        status: 'IN_TRANSIT',
+        id: loadId,
       },
       select: {
-        id: true,
+        driverId: true,
         currentLat: true,
         currentLng: true,
         status: true,
       },
     });
 
-    if (activeLoads.length === 0) {
-      return NextResponse.json({ success: true, message: 'No active loads to track' });
+    if (!load || load.driverId !== userId) {
+      return NextResponse.json({ error: 'Load not found or unauthorized' }, { status: 403 });
+    }
+
+    if (load.status !== 'IN_TRANSIT') {
+      return NextResponse.json({ success: true, message: 'Load is not in transit' });
     }
 
     // Use a transaction to batch all DB operations
     await prisma.$transaction(async (tx) => {
-      for (const load of activeLoads) {
-        // Only log history if coordinates changed significantly (~50m)
-        const hasMovedSignificantly =
-          !load.currentLat || !load.currentLng ||
-          Math.abs(load.currentLat - lat) > 0.0005 ||
-          Math.abs(load.currentLng - lng) > 0.0005;
+      // Only log history if coordinates changed significantly (~50m)
+      const hasMovedSignificantly =
+        !load.currentLat || !load.currentLng ||
+        Math.abs(load.currentLat - lat) > 0.0005 ||
+        Math.abs(load.currentLng - lng) > 0.0005;
 
-        if (hasMovedSignificantly) {
-          await tx.locationHistory.create({
-            data: { loadId: load.id, lat, lng },
-          });
-        }
-
-        await tx.load.update({
-          where: { id: load.id },
-          data: { currentLat: lat, currentLng: lng },
+      if (hasMovedSignificantly) {
+        await tx.locationHistory.create({
+          data: { loadId, lat, lng },
         });
       }
+
+      await tx.load.update({
+        where: { id: loadId },
+        data: { currentLat: lat, currentLng: lng },
+      });
     });
 
-    return NextResponse.json({ success: true, updatedLoads: activeLoads.length });
+    return NextResponse.json({ success: true, updatedLoads: 1 });
   } catch (error) {
     console.error('GPS Update Error:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json({ error: 'Failed to update GPS' }, { status: 500 });

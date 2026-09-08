@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import DriverTracker from './DriverTracker';
 import NotificationBell from '@/app/components/NotificationBell';
 import Breadcrumbs from '@/app/components/Breadcrumbs';
+import prisma from '@/lib/prisma';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const session = await verifySession();
@@ -14,12 +15,22 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     redirect('/onboarding');
   }
 
+  // Fetch active load only if driver to prevent unnecessary background tracking
+  let activeLoadId = null;
+  if (role === 'DRIVER') {
+    const activeLoad = await prisma.load.findFirst({
+      where: { driverId: session.userId, status: 'IN_TRANSIT' },
+      select: { id: true }
+    });
+    activeLoadId = activeLoad?.id;
+  }
+
   return (
     <div className="flex h-screen bg-gray-50 text-gray-900 overflow-hidden font-sans">
       <Sidebar userRole={role} />
 
-      {/* Rastreio Fantasma do Motorista (100% do Tempo se ativo) */}
-      {role === 'DRIVER' && <DriverTracker />}
+      {/* Rastreio Fantasma do Motorista (Somente se houver carga ativa) */}
+      {role === 'DRIVER' && activeLoadId && <DriverTracker loadId={activeLoadId} />}
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto bg-gray-50 relative">

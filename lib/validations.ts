@@ -108,6 +108,7 @@ export const SubmitInspectionSchema = z.object({
 // ─── GPS / Tracking Schemas ──────────────────────────────────────
 
 export const TrackingSchema = z.object({
+  loadId: z.string().uuid('Invalid load ID'),
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
 });

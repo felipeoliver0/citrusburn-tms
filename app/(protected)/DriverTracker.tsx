@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-export default function DriverTracker() {
+export default function DriverTracker({ loadId }: { loadId: string }) {
   const isTracking = useRef(false);
 
   useEffect(() => {
@@ -13,14 +13,14 @@ export default function DriverTracker() {
     if (isTracking.current) return;
     isTracking.current = true;
 
-    console.log('[TMS Tracker] GPS Tracking Initiated');
+    console.log(`[TMS Tracker] GPS Tracking Initiated for load ${loadId}`);
 
     const sendLocation = async (lat: number, lng: number) => {
       try {
         await fetch('/api/tracking', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lat, lng }),
+          body: JSON.stringify({ loadId, lat, lng }),
           // keepalive ensures the request finishes even if the user closes the tab
           keepalive: true
         });
