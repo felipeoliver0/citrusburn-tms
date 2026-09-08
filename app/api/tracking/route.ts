@@ -30,25 +30,59 @@ export async function POST(req: Request) {
 
     const { loadId, lat, lng } = parsed.data;
 
-    // Find the specific active load for this driver
+    // Fetch driver profile to verify carrier affiliation (Fleet)
+    const driver = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { employerId: true, role: true, deletedAt: true },
+    });
+
+    if (!driver || driver.role !== 'DRIVER' || driver.deletedAt) {
+      return NextResponse.json({ error: 'Driver profile not found or inactive' }, { status: 403 });
+    }
+
+    if (!driver.employerId) {
+      return NextResponse.json({ error: 'Driver is not affiliated with any carrier' }, { status: 403 });
+    }
+
+    // Find the specific active load and validate chain of custody
     const load = await prisma.load.findUnique({
       where: {
         id: loadId,
       },
       select: {
+        id: true,
         driverId: true,
+        carrierId: true,
         currentLat: true,
         currentLng: true,
         status: true,
       },
     });
 
-    if (!load || load.driverId !== userId) {
-      return NextResponse.json({ error: 'Load not found or unauthorized' }, { status: 403 });
+    if (!load) {
+      return NextResponse.json({ error: 'Load not found' }, { status: 404 });
     }
 
-    if (load.status !== 'IN_TRANSIT') {
-      return NextResponse.json({ success: true, message: 'Load is not in transit' });
+    // Chain validation:
+    // 1. Driver assigned to this specific load
+    if (load.driverId !== userId) {
+      return NextResponse.json({ error: 'Driver is not assigned to this load' }, { status: 403 });
+    }
+
+    // 2. Driver's employer must match the load's assigned carrier
+    if (load.carrierId !== driver.employerId) {
+      return NextResponse.json(
+        { error: 'Chain of custody violation: Driver employer does not match load carrier' },
+        { status: 403 }
+      );
+    }
+
+    // 3. Load must be in an active tracking state (BOOKED or IN_TRANSIT)
+    if (load.status !== 'BOOKED' && load.status !== 'IN_TRANSIT') {
+      return NextResponse.json(
+        { error: `Load is not in an active tracking state (${load.status})` },
+        { status: 400 }
+      );
     }
 
     // Use a transaction to batch all DB operations

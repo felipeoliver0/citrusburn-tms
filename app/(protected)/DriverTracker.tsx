@@ -61,7 +61,7 @@ export default function DriverTracker({ loadId }: { loadId: string }) {
       clearInterval(intervalId);
       isTracking.current = false;
     };
-  }, []);
+  }, [loadId]);
 
   return null; // Invisible component
 }
