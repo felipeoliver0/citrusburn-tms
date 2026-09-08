@@ -10,13 +10,13 @@ export async function GET(request: Request) {
   }
 
   try {
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
     const result = await prisma.locationHistory.deleteMany({
       where: {
         timestamp: {
-          lt: thirtyDaysAgo
+          lt: ninetyDaysAgo
         }
       }
     });
