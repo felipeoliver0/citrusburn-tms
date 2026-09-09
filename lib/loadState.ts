@@ -2,26 +2,30 @@ import prisma from '@/lib/prisma';
 import { LoadStatus, Role, Prisma } from '@prisma/client';
 
 export const VALID_TRANSITIONS: Record<LoadStatus, LoadStatus[]> = {
-  AVAILABLE:  ['OFFERED', 'BOOKED'],
-  OFFERED:    ['BOOKED', 'AVAILABLE'],
-  BOOKED:     ['IN_TRANSIT', 'AVAILABLE'],
+  AVAILABLE:  ['OFFERED', 'BOOKED', 'CANCELED'],
+  OFFERED:    ['BOOKED', 'AVAILABLE', 'CANCELED'],
+  BOOKED:     ['IN_TRANSIT', 'AVAILABLE', 'CANCELED'],
   IN_TRANSIT: ['DELIVERED'],
   DELIVERED:  ['INVOICED'],
   INVOICED:   [],
+  CANCELED:   [],
 };
 
 export const TRANSITION_PERMISSIONS: Record<LoadStatus, Partial<Record<LoadStatus, Role[]>>> = {
   AVAILABLE: {
     OFFERED: ['BROKER', 'ADMIN'],
     BOOKED: ['CARRIER', 'ADMIN'],
+    CANCELED: ['BROKER', 'ADMIN'],
   },
   OFFERED: {
     AVAILABLE: ['CARRIER', 'BROKER', 'ADMIN'],
     BOOKED: ['CARRIER', 'ADMIN'],
+    CANCELED: ['BROKER', 'ADMIN'],
   },
   BOOKED: {
     IN_TRANSIT: ['DRIVER', 'ADMIN'],
     AVAILABLE: ['CARRIER', 'ADMIN'],
+    CANCELED: ['BROKER', 'ADMIN'],
   },
   IN_TRANSIT: {
     DELIVERED: ['DRIVER', 'ADMIN'],
@@ -30,6 +34,7 @@ export const TRANSITION_PERMISSIONS: Record<LoadStatus, Partial<Record<LoadStatu
     INVOICED: ['BROKER', 'ADMIN'],
   },
   INVOICED: {},
+  CANCELED: {},
 };
 
 export async function transitionLoad(
